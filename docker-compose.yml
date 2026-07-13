@@ -1,0 +1,30 @@
+services:
+  web:
+    image: pablosla/work-from-home-web:latest
+    container_name: work-from-home-web
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+        
+
+  postgres:
+    image: postgres:18.3
+    container_name: work-from-home-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
