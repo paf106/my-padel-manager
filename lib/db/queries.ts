@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import {
   classStudents,
   classes,
+  paymentClasses,
   payments,
   students,
   type ClassStatus,
@@ -64,10 +65,17 @@ export async function getStudentClasses(studentId: string) {
 
 export async function getStudentPayments(studentId: string) {
   return db
-    .select()
+    .select({
+      id: payments.id,
+      amount: payments.amount,
+      period: payments.period,
+      paid: payments.paid,
+      paidAt: payments.paidAt,
+      notes: payments.notes,
+    })
     .from(payments)
     .where(eq(payments.studentId, studentId))
-    .orderBy(desc(payments.year), desc(payments.month));
+    .orderBy(desc(payments.period));
 }
 
 export async function countStudents() {
@@ -215,65 +223,80 @@ export async function listUpcomingClasses(limit = 5): Promise<ClassWithStudents[
 }
 
 // ---------------------------------------------------------------------------
-// Payments
+// Monthly payments
 // ---------------------------------------------------------------------------
 
 export type StudentPaymentRow = {
-  studentId: string;
-  firstName: string;
-  lastName: string;
-  paymentId: string | null;
-  amount: string | null;
+  id: string;
+  amount: string;
+  period: string;
   paid: boolean;
   paidAt: string | null;
   notes: string | null;
+  student: { id: string; firstName: string; lastName: string };
+  classes: { id: string; startsAt: Date; amount: string }[];
 };
 
-/** All students with their payment (if any) for a given year/month period. */
-export async function listPaymentsForPeriod(
-  year: number,
-  month: number
-): Promise<StudentPaymentRow[]> {
+export async function listCompletedClassesForMonth(year: number, month: number): Promise<ClassWithStudents[]> {
+  const from = new Date(year, month - 1, 1);
+  const to = new Date(year, month, 1);
+  const rows = await db.select().from(classes)
+    .where(and(eq(classes.status, "completed"), gte(classes.startsAt, from), lt(classes.startsAt, to)))
+    .orderBy(asc(classes.startsAt));
+  return attachStudents(rows);
+}
+
+export async function listPayments(year: number, month: number): Promise<StudentPaymentRow[]> {
+  const period = `${year}-${String(month).padStart(2, "0")}-01`;
   const rows = await db
     .select({
-      studentId: students.id,
-      firstName: students.firstName,
-      lastName: students.lastName,
-      paymentId: payments.id,
+      id: payments.id,
       amount: payments.amount,
+      period: payments.period,
       paid: payments.paid,
       paidAt: payments.paidAt,
       notes: payments.notes,
+      studentId: students.id,
+      firstName: students.firstName,
+      lastName: students.lastName,
+      classId: classes.id,
+      startsAt: classes.startsAt,
+      lineAmount: paymentClasses.amount,
     })
-    .from(students)
-    .leftJoin(
-      payments,
-      and(
-        eq(payments.studentId, students.id),
-        eq(payments.year, year),
-        eq(payments.month, month)
-      )
-    )
-    .orderBy(asc(students.firstName), asc(students.lastName));
+    .from(payments)
+    .innerJoin(students, eq(payments.studentId, students.id))
+    .leftJoin(paymentClasses, eq(paymentClasses.paymentId, payments.id))
+    .leftJoin(classes, eq(paymentClasses.classId, classes.id))
+    .where(eq(payments.period, period))
+    .orderBy(asc(students.firstName), asc(classes.startsAt));
 
-  return rows.map((r) => ({
-    studentId: r.studentId,
-    firstName: r.firstName,
-    lastName: r.lastName,
-    paymentId: r.paymentId,
-    amount: r.amount,
-    paid: r.paid ?? false,
-    paidAt: r.paidAt,
-    notes: r.notes,
-  }));
+  const byPayment = new Map<string, StudentPaymentRow>();
+  for (const row of rows) {
+    const payment = byPayment.get(row.id) ?? {
+      id: row.id,
+      amount: row.amount,
+      paid: row.paid,
+      paidAt: row.paidAt,
+      notes: row.notes,
+      period: row.period,
+      student: { id: row.studentId, firstName: row.firstName, lastName: row.lastName },
+      classes: [],
+    };
+    if (row.classId && row.startsAt && row.lineAmount && !payment.classes.some((cls) => cls.id === row.classId)) {
+      payment.classes.push({ id: row.classId, startsAt: row.startsAt, amount: row.lineAmount });
+    }
+    byPayment.set(row.id, payment);
+  }
+  return [...byPayment.values()];
 }
 
-/** Income totals for a period. */
-export async function paymentTotalsForPeriod(year: number, month: number) {
+/** Income totals for all payment records. */
+export async function paymentTotals(year?: number, month?: number) {
+  const period = year && month ? `${year}-${String(month).padStart(2, "0")}-01` : undefined;
   const rows = await db
     .select({ amount: payments.amount, paid: payments.paid })
     .from(payments)
-    .where(and(eq(payments.year, year), eq(payments.month, month)));
+    .where(period ? eq(payments.period, period) : undefined);
 
   let collected = 0;
   let pending = 0;
@@ -288,9 +311,9 @@ export async function paymentTotalsForPeriod(year: number, month: number) {
 /** Total income collected in a year (by month), for the dashboard. */
 export async function collectedByMonth(year: number) {
   const rows = await db
-    .select({ month: payments.month, amount: payments.amount, paid: payments.paid })
+    .select({ month: sql<number>`EXTRACT(MONTH FROM ${payments.paidAt})`, amount: payments.amount, paid: payments.paid })
     .from(payments)
-    .where(eq(payments.year, year));
+    .where(and(eq(payments.paid, true), sql`EXTRACT(YEAR FROM ${payments.paidAt}) = ${year}`));
 
   const byMonth = new Array(12).fill(0) as number[];
   for (const r of rows) {

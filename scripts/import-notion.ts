@@ -158,6 +158,10 @@ function toDateOnly(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
+function toMonthStart(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
 /** Splits a Notion relation cell into individual names. */
 function splitNames(value: string): string[] {
   if (!value) return [];
@@ -309,34 +313,22 @@ async function importPayments() {
     // Period: may come as a "month" (date) or as separate columns.
     const periodRaw = pick(row, ["mes", "periodo", "período", "month", "fecha"]);
     const period = parseDate(periodRaw);
-    let year: number;
-    let month: number;
-    if (period) {
-      year = period.getFullYear();
-      month = period.getMonth() + 1;
-    } else {
-      year = Number(pick(row, ["año", "ano", "year"])) || new Date().getFullYear();
-      month = Number(pick(row, ["mes numero", "month number"])) || 1;
-    }
-
     const amount = parseAmount(pick(row, ["importe", "cantidad", "precio", "amount", "total"]));
     const paidRaw = normalize(pick(row, ["pagado", "estado", "paid", "status"]));
-    const paid = /si|sí|true|paga|yes|ok|cobrad/.test(paidRaw);
+    const paid = ["si", "sí", "true", "yes", "ok", "pagado", "cobrado"].includes(paidRaw);
 
-    await db
+    const [inserted] = await db
       .insert(payments)
       .values({
-        studentId,
-        year,
-        month,
         amount: amount.toFixed(2),
         paid,
         paidAt: paid ? toDateOnly(period ?? new Date()) : null,
+        studentId,
+        period: toMonthStart(period ?? new Date()),
       })
-      .onConflictDoUpdate({
-        target: [payments.studentId, payments.year, payments.month],
-        set: { amount: amount.toFixed(2), paid },
-      });
+      .onConflictDoNothing({ target: [payments.studentId, payments.period] })
+      .returning({ id: payments.id });
+    if (!inserted) continue;
     count++;
   }
 

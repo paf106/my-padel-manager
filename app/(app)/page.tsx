@@ -11,14 +11,14 @@ import {
   countClasses,
   countStudents,
   listUpcomingClasses,
-  paymentTotalsForPeriod,
+  paymentTotals,
 } from "@/lib/db/queries";
 import {
   CLASS_STATUS_BADGE,
   CLASS_STATUS_LABELS,
   CLASS_TYPE_LABELS,
 } from "@/lib/labels";
-import { formatCurrency, formatDateTime, fullName, monthName } from "@/lib/format";
+import { formatCurrency, formatDateTime, fullName } from "@/lib/format";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -34,15 +34,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
 
   const [studentsCount, classesCount, upcoming, totals] = await Promise.all([
     countStudents(),
     countClasses(),
     listUpcomingClasses(6),
-    paymentTotalsForPeriod(year, month),
+    paymentTotals(),
   ]);
 
   const stats = [
@@ -59,14 +56,14 @@ export default async function DashboardPage() {
       href: "/classes",
     },
     {
-      label: `Cobrado (${monthName(month)})`,
+      label: "Cobrado",
       value: formatCurrency(totals.collected),
       icon: Wallet,
       href: "/payments",
       className: "text-emerald-600",
     },
     {
-      label: `Pendiente (${monthName(month)})`,
+      label: "Pendiente",
       value: formatCurrency(totals.pending),
       icon: Wallet,
       href: "/payments",

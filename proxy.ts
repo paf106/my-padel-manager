@@ -23,7 +23,11 @@ export async function proxy(request: NextRequest) {
   // Protected route without a session -> go to /login.
   if (!isPublic && !authed) {
     const loginUrl = new URL("/login", request.url);
-    if (pathname !== "/") loginUrl.searchParams.set("from", pathname);
+    if (request.nextUrl.search) {
+      loginUrl.searchParams.set("from", `${pathname}${request.nextUrl.search}`);
+    } else if (pathname !== "/") {
+      loginUrl.searchParams.set("from", pathname);
+    }
     return NextResponse.redirect(loginUrl);
   }
 

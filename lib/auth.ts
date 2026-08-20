@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "mpm_session";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
@@ -58,6 +59,15 @@ export async function verifySessionToken(
   const sig = token.slice(idx + 1);
   if (!payload.startsWith("1:")) return false;
   try {
+    const issuedAt = Number(payload.slice(2));
+    const now = Date.now();
+    if (
+      !Number.isSafeInteger(issuedAt) ||
+      issuedAt > now + 60_000 ||
+      now - issuedAt > SESSION_MAX_AGE_SECONDS * 1000
+    ) {
+      return false;
+    }
     const expected = await hmac(payload, getSecret());
     return timingSafeEqual(sig, expected);
   } catch {
@@ -86,4 +96,10 @@ export function checkCredentials(username: string, password: string): boolean {
 export async function isAuthenticated(): Promise<boolean> {
   const store = await cookies();
   return verifySessionToken(store.get(SESSION_COOKIE)?.value);
+}
+
+export async function requireAuthenticated() {
+  if (!(await isAuthenticated())) {
+    throw new Error("No autenticado");
+  }
 }

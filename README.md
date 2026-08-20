@@ -92,7 +92,7 @@ app/
     students/       # CRUD de alumnos + ficha
     classes/        # CRUD de clases + ficha
     calendar/       # Vista de calendario mensual
-    payments/       # Pagos mensuales e ingresos
+   payments/       # Pagos mensuales calculados por clases
   api/auth/         # Login / logout
   login/            # Página de acceso
 components/
@@ -113,7 +113,8 @@ drizzle/            # Migraciones generadas
 - **students**: `first_name`, `last_name`, `birth_date`, `level` (`beginner_intro` | `beginner` | `intermediate` | `advanced`), `gender` (`male` | `female` | `other`), `phone`.
 - **classes**: `type` (`individual` | `pair` | `group`), `status` (`pending` | `cancelled` | `completed`), `starts_at`, `duration_min`, `court_price`, `class_price`, `notes`.
 - **class_students**: relación N:M entre clases y alumnos.
-- **payments**: `student_id`, `year`, `month`, `amount`, `paid`, `paid_at` (único por alumno + periodo).
+- **payments**: un pago por `student_id` y `period` (primer día del mes), con `amount`, `paid`, `paid_at` y `notes`.
+- **payment_classes**: snapshot de las clases completadas incluidas en cada pago. El importe por alumno se calcula como `(class_price + court_price) / número de alumnos` y se redondea en céntimos.
 
 ## Despliegue
 

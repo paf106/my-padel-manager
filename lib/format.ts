@@ -95,10 +95,15 @@ export function fullName(s: {
   return [s.firstName, s.lastName].filter(Boolean).join(" ").trim();
 }
 
-/** Class profit (class price minus court price). */
+/** Teacher revenue after the court is reimbursed separately by the student. */
 export function classProfit(c: {
   classPrice: string | number;
   courtPrice: string | number;
 }): number {
-  return toNumber(c.classPrice) - toNumber(c.courtPrice);
+  return toNumber(c.classPrice);
+}
+
+/** Total charged for a class before splitting it between students. */
+export function classTotal(c: { classPrice: string | number; courtPrice: string | number }) {
+  return toNumber(c.classPrice) + toNumber(c.courtPrice);
 }

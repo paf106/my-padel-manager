@@ -1,114 +1,20 @@
-"use client";
-
-import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Check, Loader2, X } from "lucide-react";
-
-import { togglePaid, upsertPayment } from "@/app/(app)/payments/actions";
+import { formatCurrency, formatDate, formatDateTime, fullName } from "@/lib/format";
+import type { MonthlyDraft } from "@/lib/billing";
 import type { StudentPaymentRow } from "@/lib/db/queries";
-import { cn } from "@/lib/utils";
-import { fullName, toNumber } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { DeletePaymentButton } from "./delete-payment-button";
+import { RecalculatePaymentButton } from "./recalculate-payment-button";
+import { PaymentStatusButton } from "./payment-status-button";
 
-export function PaymentRow({
-  row,
-  year,
-  month,
-}: {
-  row: StudentPaymentRow;
-  year: number;
-  month: number;
-}) {
-  const [amount, setAmount] = useState<string>(
-    row.amount != null ? String(toNumber(row.amount)) : ""
-  );
-  const [pending, startTransition] = useTransition();
-
-  const paid = row.paid;
-
-  const hidden = (
-    <>
-      <input type="hidden" name="studentId" value={row.studentId} />
-      <input type="hidden" name="year" value={year} />
-      <input type="hidden" name="month" value={month} />
-    </>
-  );
-
-  const saveAmount = () => {
-    startTransition(async () => {
-      const fd = new FormData();
-      fd.set("studentId", row.studentId);
-      fd.set("year", String(year));
-      fd.set("month", String(month));
-      fd.set("amount", amount || "0");
-      fd.set("paid", paid ? "true" : "false");
-      await upsertPayment(fd);
-    });
-  };
-
-  const toggle = () => {
-    startTransition(async () => {
-      const fd = new FormData();
-      fd.set("studentId", row.studentId);
-      fd.set("year", String(year));
-      fd.set("month", String(month));
-      fd.set("amount", amount || "0");
-      fd.set("paid", paid ? "false" : "true");
-      await togglePaid(fd);
-    });
-  };
-
-  return (
-    <TableRow>
-      <TableCell className="font-medium">
-        <Link href={`/students/${row.studentId}`} className="hover:underline">
-          {fullName(row)}
-        </Link>
-        {hidden}
-      </TableCell>
-      <TableCell className="w-full max-w-40 sm:w-40">
-        <div className="flex items-center gap-1">
-          <Input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            onBlur={saveAmount}
-            placeholder="0,00"
-            aria-label="Importe"
-            className="h-10 w-24"
-          />
-          <span className="text-sm text-muted-foreground">€</span>
-        </div>
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        {paid ? (
-          <Badge className="gap-1">
-            <Check className="size-3" aria-hidden="true" /> Pagado
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="gap-1">
-            <X className="size-3" aria-hidden="true" /> Pendiente
-          </Badge>
-        )}
-      </TableCell>
-      <TableCell className="text-right">
-        <Button
-          variant={paid ? "outline" : "default"}
-          size="sm"
-          onClick={toggle}
-          disabled={pending}
-          className={cn(pending && "opacity-70")}
-        >
-          {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-          {paid ? "Marcar pendiente" : "Marcar pagado"}
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
+export function PaymentRow({ row, freshDraft }: { row: StudentPaymentRow; freshDraft?: MonthlyDraft }) {
+  const stale = freshDraft ? freshDraft.total !== row.amount || freshDraft.lines.length !== row.classes.length || freshDraft.lines.some((line) => !row.classes.some((item) => item.id === line.classId && item.amount === line.amount)) : row.classes.length > 0 || Number(row.amount) > 0;
+  return <TableRow>
+    <TableCell className="font-medium"><Link href={`/students/${row.student.id}`} className="hover:underline">{fullName(row.student)}</Link></TableCell>
+    <TableCell className="hidden md:table-cell">{row.classes.length ? <div className="space-y-0.5 text-sm">{row.classes.map((cls) => <p key={cls.id}>{formatDateTime(cls.startsAt)} · {formatCurrency(cls.amount)}</p>)}</div> : <span className="text-muted-foreground">Sin clases</span>}</TableCell>
+    <TableCell className="text-right tabular-nums">{formatCurrency(row.amount)}</TableCell>
+    <TableCell><PaymentStatusButton id={row.id} paid={row.paid} />{stale ? <div className="mt-1"><span className="text-xs font-medium text-destructive">Desactualizado</span></div> : null}</TableCell>
+    <TableCell className="hidden sm:table-cell text-muted-foreground">{formatDate(row.paidAt)}</TableCell>
+    <TableCell className="text-right"><div className="flex justify-end gap-1">{stale ? <RecalculatePaymentButton id={row.id} /> : null}<DeletePaymentButton id={row.id} /></div></TableCell>
+  </TableRow>;
 }

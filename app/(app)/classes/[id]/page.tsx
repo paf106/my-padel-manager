@@ -10,6 +10,7 @@ import {
 } from "@/lib/labels";
 import {
   classProfit,
+  classTotal,
   formatCurrency,
   formatDateTime,
   fullName,
@@ -41,6 +42,7 @@ export default async function ClassDetailPage({
   if (!cls) notFound();
 
   const profit = classProfit(cls);
+  const total = classTotal(cls);
 
   return (
     <div className="space-y-6">
@@ -82,15 +84,15 @@ export default async function ClassDetailPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Precio clase</CardDescription>
+            <CardDescription>Total alumno</CardDescription>
             <CardTitle className="text-2xl">
-              {formatCurrency(cls.classPrice)}
+              {formatCurrency(total)}
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Beneficio</CardDescription>
+            <CardDescription>Beneficio profesor</CardDescription>
             <CardTitle
               className={
                 profit >= 0

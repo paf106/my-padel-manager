@@ -10,6 +10,7 @@ import {
 } from "@/lib/labels";
 import {
   classProfit,
+  classTotal,
   formatCurrency,
   formatDateTime,
   fullName,
@@ -84,8 +85,8 @@ export default async function ClasesPage({
                 <TableHead className="hidden md:table-cell">Alumnos</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
-                <TableHead className="hidden lg:table-cell text-right">
-                  Beneficio
+                  <TableHead className="hidden lg:table-cell text-right">
+                   Profesor
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -111,7 +112,7 @@ export default async function ClasesPage({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatCurrency(c.classPrice)}
+                    {formatCurrency(classTotal(c))}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-right tabular-nums">
                     {formatCurrency(classProfit(c))}

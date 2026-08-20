@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { students } from "@/lib/db/schema";
+import { requireAuthenticated } from "@/lib/auth";
 
 const levelValues = ["beginner_intro", "beginner", "intermediate", "advanced"] as const;
 const genderValues = ["male", "female", "other"] as const;
@@ -55,6 +56,7 @@ export async function createStudent(
   _prev: StudentFormState,
   formData: FormData
 ): Promise<StudentFormState> {
+  await requireAuthenticated();
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return {
@@ -74,6 +76,7 @@ export async function updateStudent(
   _prev: StudentFormState,
   formData: FormData
 ): Promise<StudentFormState> {
+  await requireAuthenticated();
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return {
@@ -90,6 +93,7 @@ export async function updateStudent(
 }
 
 export async function deleteStudent(id: string) {
+  await requireAuthenticated();
   await db.delete(students).where(eq(students.id, id));
   revalidatePath("/students");
   redirect("/students");

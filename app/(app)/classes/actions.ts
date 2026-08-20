@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { classStudents, classes } from "@/lib/db/schema";
+import { requireAuthenticated } from "@/lib/auth";
 
 const typeValues = ["individual", "pair", "group"] as const;
 const statusValues = ["pending", "cancelled", "completed"] as const;
@@ -55,6 +56,7 @@ export async function createClass(
   _prev: ClassFormState,
   formData: FormData
 ): Promise<ClassFormState> {
+  await requireAuthenticated();
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return {
@@ -93,6 +95,7 @@ export async function updateClass(
   _prev: ClassFormState,
   formData: FormData
 ): Promise<ClassFormState> {
+  await requireAuthenticated();
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return {
@@ -130,6 +133,7 @@ export async function updateClass(
 }
 
 export async function deleteClass(id: string) {
+  await requireAuthenticated();
   await db.delete(classes).where(eq(classes.id, id));
   revalidatePath("/classes");
   revalidatePath("/calendar");

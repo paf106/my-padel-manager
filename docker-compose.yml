@@ -1,12 +1,13 @@
 services:
   web:
-    image: pablosla/work-from-home-web:latest
-    container_name: work-from-home-web
+    image: ${DOCKERHUB_USERNAME:-paf106}/my-padel-manager:latest
+    container_name: my-padel-manager-web
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      SESSION_SECRET: ${SESSION_SECRET}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE}
+      AUTH_USERNAME: ${AUTH_USERNAME}
+      AUTH_PASSWORD: ${AUTH_PASSWORD}
+      AUTH_SECRET: ${AUTH_SECRET}
     ports:
       - "3000:3000"
     depends_on:
@@ -15,14 +16,15 @@ services:
 
   postgres:
     image: postgres:18.3
-    container_name: work-from-home-postgres
+    container_name: my-padel-manager-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # Expose only when local DB administration is needed.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
 

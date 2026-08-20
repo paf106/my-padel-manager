@@ -17,11 +17,11 @@ import {
 import {
   ageFromBirthDate,
   classProfit,
+  classTotal,
   formatCurrency,
   formatDate,
   formatDateTime,
   fullName,
-  monthName,
   toNumber,
 } from "@/lib/format";
 import { EmptyState } from "@/components/empty-state";
@@ -180,7 +180,7 @@ export default async function StudentDetailPage({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {formatCurrency(c.classPrice)}
+                      {formatCurrency(classTotal(c))}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-right tabular-nums">
                       {formatCurrency(classProfit(c))}
@@ -224,7 +224,7 @@ export default async function StudentDetailPage({
                 {paymentsList.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="capitalize">
-                      {monthName(p.month)} {p.year}
+                      {formatDate(p.period)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatCurrency(p.amount)}

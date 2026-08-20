@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   }
 
   const token = await createSessionToken();
-  const destination = from.startsWith("/") ? from : "/";
+  const destination = from.startsWith("/") && !from.startsWith("//") ? from : "/";
   const response = NextResponse.redirect(new URL(destination, request.url), {
     status: 303,
   });
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   response.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "development",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
