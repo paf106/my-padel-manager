@@ -1,0 +1,14 @@
+import Link from "next/link";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { students } from "@/lib/db/schema";
+import { updateStudent } from "../../actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function EditStudentPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> }) {
+  const [{ id }, { error }] = await Promise.all([params, searchParams]);
+  const [student] = await db.select().from(students).where(eq(students.id, id));
+  if (!student) return <main className="mx-auto max-w-2xl px-5 pt-8">Alumno no encontrado.</main>;
+  return <main className="mx-auto min-h-screen max-w-2xl px-5 pb-12 pt-8"><Link href={`/students/${id}`} className="text-sm font-bold text-emerald-700">← Volver al alumno</Link><h1 className="mt-6 text-3xl font-black">Editar alumno</h1>{error && <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700">Revisa los datos introducidos.</p>}<form action={updateStudent.bind(null, id)} className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-white p-5"><div className="grid gap-5 sm:grid-cols-2"><label className="block text-sm font-bold">Nombre<input name="firstName" required maxLength={80} defaultValue={student.firstName} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><label className="block text-sm font-bold">Apellidos<input name="lastName" required maxLength={120} defaultValue={student.lastName} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label></div><label className="block text-sm font-bold">Fecha de nacimiento<input name="birthDate" type="date" defaultValue={student.birthDate || ""} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><label className="block text-sm font-bold">Nivel<select name="level" defaultValue={student.level} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3"><option value="intro">Iniciación</option><option value="beginner">Principiante</option><option value="intermediate">Medio</option><option value="advanced">Avanzado</option><option value="competition">Competición</option></select></label><label className="block text-sm font-bold">Sexo<select name="gender" defaultValue={student.gender} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3"><option value="male">Hombre</option><option value="female">Mujer</option></select></label><label className="block text-sm font-bold">Teléfono<input name="phone" type="tel" defaultValue={student.phone || ""} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><button className="min-h-12 w-full rounded-xl bg-emerald-800 font-bold text-white">Guardar cambios</button></form></main>;
+}

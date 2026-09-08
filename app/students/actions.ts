@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { students } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 const studentSchema = z.object({
   firstName: z.string().trim().min(1, "El nombre es obligatorio").max(80),
@@ -26,4 +27,19 @@ export async function createStudent(formData: FormData) {
   });
   revalidatePath("/students");
   redirect("/students");
+}
+
+export async function updateStudent(id: string, formData: FormData) {
+  const result = studentSchema.safeParse(Object.fromEntries(formData));
+  if (!result.success) redirect(`/students/${id}/edit?error=invalid`);
+
+  await db.update(students).set({
+    ...result.data,
+    birthDate: result.data.birthDate || null,
+    phone: result.data.phone || null,
+    updatedAt: new Date(),
+  }).where(eq(students.id, id));
+  revalidatePath("/students");
+  revalidatePath(`/students/${id}`);
+  redirect(`/students/${id}`);
 }

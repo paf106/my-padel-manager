@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { classStudents, classes } from "@/lib/db/schema";
+import { classStudents, classes, students } from "@/lib/db/schema";
+import { inArray } from "drizzle-orm";
 import { validateClassStudentCount } from "@/lib/billing";
 
 const schema = z.object({
@@ -25,6 +26,9 @@ export async function createClass(formData: FormData) {
     ratePerStudentCents: Math.round(Number(raw.ratePerStudentCents) * 100),
   });
   if (!result.success || !validateClassStudentCount(result.data.type, studentIds.length)) redirect("/classes/new?error=invalid");
+  if (studentIds.length !== new Set(studentIds).size) redirect("/classes/new?error=invalid");
+  const validStudents = await db.select({ id: students.id }).from(students).where(inArray(students.id, studentIds));
+  if (validStudents.length !== new Set(studentIds).size) redirect("/classes/new?error=invalid");
   const startsAt = new Date(result.data.startsAt);
   if (Number.isNaN(startsAt.getTime())) redirect("/classes/new?error=invalid");
   await db.transaction(async (tx) => {
