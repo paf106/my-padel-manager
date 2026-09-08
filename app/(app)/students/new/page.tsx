@@ -1,7 +1,23 @@
-import Link from "next/link";
 import { createStudent } from "../actions";
+import { BackLink } from "@/components/ui/back-link";
+import { Input, Select, Field } from "@/components/ui/field";
 
 export default async function NewStudentPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  return <main className="mx-auto min-h-screen max-w-2xl px-5 pb-12 pt-8"><Link href="/students" className="text-sm font-bold text-emerald-700">← Volver a alumnos</Link><h1 className="mt-6 text-3xl font-black">Nuevo alumno</h1>{error && <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700" role="alert">Revisa los datos introducidos.</p>}<form action={createStudent} className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-white p-5"><div className="grid gap-5 sm:grid-cols-2"><label className="block text-sm font-bold">Nombre<input name="firstName" required maxLength={80} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><label className="block text-sm font-bold">Apellidos<input name="lastName" required maxLength={120} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label></div><label className="block text-sm font-bold">Fecha de nacimiento<input name="birthDate" type="date" className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><label className="block text-sm font-bold">Nivel<select name="level" defaultValue="intro" className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3"><option value="intro">Iniciación</option><option value="beginner">Principiante</option><option value="intermediate">Medio</option><option value="advanced">Avanzado</option><option value="competition">Competición</option></select></label><label className="block text-sm font-bold">Sexo<select name="gender" defaultValue="male" className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3"><option value="male">Hombre</option><option value="female">Mujer</option></select></label><label className="block text-sm font-bold">Teléfono<input name="phone" type="tel" autoComplete="tel" className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><button className="min-h-12 w-full rounded-xl bg-emerald-800 font-bold text-white">Guardar alumno</button></form></main>;
+  return (
+    <main className="mx-auto min-h-screen max-w-3xl pb-12">
+      <BackLink href="/students" label="Volver a alumnos" />
+      <h1 className="mt-6 text-3xl font-black">Nuevo alumno</h1>
+      {error && <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700" role="alert">Revisa los datos introducidos.</p>}
+      <form action={createStudent} className="mt-8 grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 lg:grid-cols-2">
+        <Field label="Nombre"><Input name="firstName" required maxLength={80} /></Field>
+        <Field label="Apellidos"><Input name="lastName" required maxLength={120} /></Field>
+        <Field label="Fecha de nacimiento"><Input name="birthDate" type="date" /></Field>
+        <Field label="Nivel"><Select name="level" defaultValue="intro"><option value="intro">Iniciación</option><option value="beginner">Principiante</option><option value="intermediate">Medio</option><option value="advanced">Avanzado</option><option value="competition">Competición</option></Select></Field>
+        <Field label="Sexo"><Select name="gender" defaultValue="male"><option value="male">Hombre</option><option value="female">Mujer</option></Select></Field>
+        <Field label="Teléfono"><Input name="phone" type="tel" autoComplete="tel" /></Field>
+        <button className="min-h-12 w-full rounded-xl bg-emerald-800 font-bold text-white lg:col-span-2 lg:w-fit lg:px-6">Guardar alumno</button>
+      </form>
+    </main>
+  );
 }
