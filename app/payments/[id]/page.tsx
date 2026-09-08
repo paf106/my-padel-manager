@@ -1,0 +1,14 @@
+import Link from "next/link";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { paymentLines, payments, students } from "@/lib/db/schema";
+import { updatePayment } from "./actions";
+
+export const dynamic = "force-dynamic";
+export default async function PaymentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const [row] = await db.select({ payment: payments, student: students }).from(payments).innerJoin(students, eq(payments.studentId, students.id)).where(eq(payments.id, id));
+  if (!row) return <main className="mx-auto max-w-2xl px-5 pt-8">Pago no encontrado.</main>;
+  const lines = await db.select().from(paymentLines).where(eq(paymentLines.paymentId, id));
+  return <main className="mx-auto min-h-screen max-w-2xl px-5 pb-12 pt-8"><Link href="/payments" className="text-sm font-bold text-emerald-700">← Volver a pagos</Link><h1 className="mt-6 text-3xl font-black">{row.student.firstName} {row.student.lastName}</h1><p className="mt-2 text-slate-500">Total: <strong>{((row.payment.overrideAmountCents ?? row.payment.computedAmountCents) / 100).toFixed(2)} €</strong></p><form action={updatePayment.bind(null, id)} className="mt-8 rounded-2xl border border-slate-200 bg-white p-5"><label className="block text-sm font-bold">Importe cobrado<input name="paidAmount" type="number" min="0" step="0.01" inputMode="decimal" defaultValue={(row.payment.paidAmountCents / 100).toFixed(2)} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3" /></label><label className="mt-4 block text-sm font-bold">Método<select name="method" defaultValue={row.payment.method ?? "cash"} className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-3"><option value="cash">Efectivo</option><option value="bizum">Bizum</option><option value="transfer">Transferencia</option></select></label><button className="mt-5 min-h-12 w-full rounded-xl bg-emerald-800 font-bold text-white">Guardar cobro</button></form><section className="mt-6"><h2 className="text-lg font-black">Desglose de clases</h2><div className="mt-3 space-y-2">{lines.map((line) => <div key={line.classId} className="flex justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm"><span>Clase {line.classId.slice(0, 8)}</span><strong>{(line.amountCents / 100).toFixed(2)} €</strong></div>)}</div></section></main>;
+}
