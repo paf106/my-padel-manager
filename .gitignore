@@ -37,6 +37,9 @@ yarn-error.log*
 # notion export (datos personales)
 /notion-export
 
+# local database backups
+/backups
+
 # vercel
 .vercel
 
