@@ -7,7 +7,6 @@ import { db } from "@/lib/db";
 import { classes } from "@/lib/db/schema";
 import { payments } from "@/lib/db/schema";
 import { RevenueChart } from "@/components/revenue-chart";
-import { formatMoney } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
