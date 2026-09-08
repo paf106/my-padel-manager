@@ -97,3 +97,41 @@ ALTER TABLE "classes" ADD CONSTRAINT "classes_series_id_class_series_id_fk" FORE
 ALTER TABLE "payment_lines" ADD CONSTRAINT "payment_lines_payment_id_payments_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_lines" ADD CONSTRAINT "payment_lines_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;
+--> statement-breakpoint
+CREATE INDEX "classes_starts_at_idx" ON "classes" USING btree ("starts_at");
+--> statement-breakpoint
+CREATE INDEX "classes_status_starts_at_idx" ON "classes" USING btree ("status","starts_at");
+--> statement-breakpoint
+CREATE INDEX "payments_period_idx" ON "payments" USING btree ("period");
+--> statement-breakpoint
+ALTER TABLE "app_settings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "class_series" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "class_students" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "classes" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "payment_lines" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "payments" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "students" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+CREATE OR REPLACE FUNCTION public.validate_class_student_count()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  class_type_value class_type;
+  student_count integer;
+BEGIN
+  SELECT type INTO class_type_value FROM classes WHERE id = COALESCE(NEW.class_id, OLD.class_id);
+  SELECT count(*) INTO student_count FROM class_students WHERE class_id = COALESCE(NEW.class_id, OLD.class_id);
+  IF class_type_value = 'individual' AND student_count > 1 THEN RAISE EXCEPTION 'Individual classes require one student'; END IF;
+  IF class_type_value = 'pair' AND student_count > 2 THEN RAISE EXCEPTION 'Pair classes require two students'; END IF;
+  IF class_type_value = 'group' AND student_count > 4 THEN RAISE EXCEPTION 'Group classes require three or four students'; END IF;
+  RETURN COALESCE(NEW, OLD);
+END;
+$$;
+--> statement-breakpoint
+CREATE CONSTRAINT TRIGGER class_students_count_trigger
+AFTER INSERT OR UPDATE OR DELETE ON class_students
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW EXECUTE FUNCTION public.validate_class_student_count();
+--> statement-breakpoint
+INSERT INTO app_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
