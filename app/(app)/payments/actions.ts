@@ -7,6 +7,7 @@ import { buildBillingLines } from "@/lib/billing";
 import { classStudents, classes, paymentLines, payments } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth";
 import { madridMonthRange } from "@/lib/dates";
+import { redirect } from "next/navigation";
 
 export async function generateMonthlyPayments(period: string) {
   await requireUser();
@@ -26,4 +27,11 @@ export async function generateMonthlyPayments(period: string) {
     }
   });
   revalidatePath("/payments");
+}
+
+export async function deletePayment(id: string) {
+  await requireUser();
+  await db.delete(payments).where(eq(payments.id, id));
+  revalidatePath("/payments");
+  redirect("/payments");
 }

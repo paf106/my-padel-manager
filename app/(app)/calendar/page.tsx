@@ -1,25 +1,18 @@
 import Link from "next/link";
 import { and, asc, gte, lt } from "drizzle-orm";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarDays, Plus } from "lucide-react";
 import { db } from "@/lib/db";
 import { classes } from "@/lib/db/schema";
-import { Fab } from "@/components/ui/fab";
+import { classTypeLabels, classStatusLabels } from "@/lib/labels";
 import { PageHeader } from "@/components/ui/page-header";
-import { madridMonthRange } from "@/lib/dates";
+import { MonthNavigation } from "@/components/calendar/month-navigation";
+import { buildCalendarHref, getCalendarDays, parseCalendarMonth } from "@/lib/calendar";
 
 export const dynamic = "force-dynamic";
-
-export default async function CalendarPage() {
-  const now = new Date();
-  const { start, end } = madridMonthRange(now);
+export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ year?: string; month?: string; day?: string }> }) {
+  const params = await searchParams; const { year, month } = parseCalendarMonth(params.year, params.month); const { cells, monthName } = getCalendarDays(year, month);
+  const start = new Date(Date.UTC(year, month - 1, 1)); const end = new Date(Date.UTC(year, month, 1));
   const rows = await db.select().from(classes).where(and(gte(classes.startsAt, start), lt(classes.startsAt, end))).orderBy(asc(classes.startsAt));
-  return (
-    <main className="mx-auto min-h-screen max-w-5xl">
-      <PageHeader title={format(now, "MMMM yyyy", { locale: es })} eyebrow="Agenda" action={<div className="flex gap-2"><Link href="/classes/series/new" className="rounded-xl border border-emerald-800 px-3 py-3 text-sm font-bold text-emerald-800">Serie</Link><Link href="/classes/new" className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white">Añadir clase</Link></div>} />
-      <Fab href="/classes/new" label="Nueva clase" icon={Plus} />
-      {rows.length === 0 ? <div className="mt-8 rounded-2xl border border-dashed border-slate-300 p-8 text-center"><CalendarDays className="mx-auto mb-3 text-slate-400" /><p className="font-bold">No hay clases este mes</p><p className="mt-1 text-sm text-slate-500">Añade una clase para verla aquí.</p></div> : <div className="mt-8 space-y-3">{rows.map((item) => <article key={item.id} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 lg:gap-8 lg:px-6"><div className="w-14 text-center"><p className="text-xs font-bold uppercase text-slate-500">{format(item.startsAt, "EEE", { locale: es })}</p><p className="text-2xl font-black">{format(item.startsAt, "d")}</p></div><div className="border-l border-slate-200 pl-4"><Link href={`/classes/${item.id}`} className="font-black">{format(item.startsAt, "HH:mm")} · {item.type === "individual" ? "Individual" : item.type === "pair" ? "Pareja" : "Grupo"}</Link><p className="mt-1 text-sm text-slate-500">{item.status === "completed" ? "Terminada" : item.status === "cancelled" ? "Cancelada" : "Pendiente"}</p></div></article>)}</div>}
-    </main>
-  );
+  const byDay = new Map<string, typeof rows>(); for (const item of rows) { const key = item.startsAt.toISOString().slice(0, 10); byDay.set(key, [...(byDay.get(key) ?? []), item]); }
+  const selectedDay = params.day ?? cells.find((cell) => cell?.isToday)?.date ?? cells.find(Boolean)?.date; const selectedClasses = selectedDay ? byDay.get(selectedDay) ?? [] : [];
+  return <main className="mx-auto min-h-screen max-w-5xl"><PageHeader title={monthName} eyebrow="Agenda" action={<div className="flex gap-2"><Link href="/classes/series/new" className="hidden rounded-xl border border-emerald-800 px-3 py-3 text-sm font-bold text-emerald-800 sm:inline-flex">Serie</Link><Link href="/classes/new" className="hidden rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white sm:inline-flex">Añadir clase</Link></div>} /><div className="mt-6 flex justify-end"><MonthNavigation year={year} month={month} /></div><div className="mt-4 rounded-2xl border border-slate-200 bg-white p-2 sm:p-4"><div className="grid grid-cols-7 gap-1 lg:gap-2">{["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map((day) => <div key={day} className="py-2 text-center text-[10px] font-bold uppercase text-slate-500 sm:text-xs">{day}</div>)}{cells.map((cell, index) => cell ? <div key={cell.date} className={`min-h-16 rounded-xl border p-1 sm:min-h-24 sm:p-2 lg:min-h-28 ${cell.isToday ? "border-emerald-800 ring-2 ring-emerald-900/20" : "border-slate-200"} ${params.day === cell.date ? "bg-emerald-50" : "bg-white"}`}><Link href={buildCalendarHref("/calendar", year, month, cell.date)} className="block h-full"><span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:h-7 sm:w-7 sm:text-sm ${cell.isToday ? "bg-emerald-800 text-white" : "text-slate-800"}`}>{cell.dayNumber}</span><div className="mt-1 hidden space-y-1 lg:block">{(byDay.get(cell.date) ?? []).slice(0, 3).map((item) => <Link key={item.id} href={`/classes/${item.id}`} className={`block truncate rounded-md px-1.5 py-1 text-[11px] font-bold ${item.status === "completed" ? "bg-emerald-100 text-emerald-800" : item.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800"}`}>{item.startsAt.toISOString().slice(11, 16)} · {classTypeLabels[item.type]}</Link>)}</div>{(byDay.get(cell.date)?.length ?? 0) > 0 && <span className="mt-2 block h-2 w-2 rounded-full bg-emerald-600 lg:hidden" />}</Link></div> : <div key={`empty-${index}`} className="min-h-16 rounded-xl border border-transparent sm:min-h-24 lg:min-h-28" />)}</div></div><section className="mt-6 lg:hidden"><h2 className="text-lg font-black">Clases del día</h2><div className="mt-3 space-y-2">{selectedClasses.map((item) => <Link key={item.id} href={`/classes/${item.id}`} className="block rounded-2xl border border-slate-200 bg-white p-4"><p className="font-black">{item.startsAt.toISOString().slice(11,16)} · {classTypeLabels[item.type]}</p><p className="mt-1 text-sm text-slate-500">{classStatusLabels[item.status]}</p></Link>)}</div></section></main>;
 }
