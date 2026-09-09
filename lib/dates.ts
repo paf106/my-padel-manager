@@ -3,6 +3,18 @@ import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export const MADRID_TIME_ZONE = "Europe/Madrid";
 
+export function madridDateKey(date: Date) {
+  return format(toZonedTime(date, MADRID_TIME_ZONE), "yyyy-MM-dd");
+}
+
+export function madridTime(date: Date) {
+  return format(toZonedTime(date, MADRID_TIME_ZONE), "HH:mm");
+}
+
+export function madridToday() {
+  return madridDateKey(new Date());
+}
+
 export function madridMonthRange(date = new Date()) {
   const madridDate = toZonedTime(date, MADRID_TIME_ZONE);
   return {

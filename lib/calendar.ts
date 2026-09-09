@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { madridMonthKey } from "@/lib/dates";
+import { madridMonthKey, madridToday } from "@/lib/dates";
 
 export type CalendarDay = { date: string; dayNumber: number; isToday: boolean };
 
@@ -24,7 +24,7 @@ export function getCalendarDays(year: number, month: number) {
   const first = new Date(Date.UTC(year, month - 1, 1));
   const total = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const offset = first.getUTCDay() === 0 ? 6 : first.getUTCDay() - 1;
-  const today = madridMonthKey() + `-${String(new Date().getDate()).padStart(2, "0")}`;
+  const today = madridToday();
   const cells: (CalendarDay | null)[] = Array.from({ length: offset }, () => null);
   for (let day = 1; day <= total; day++) {
     const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
