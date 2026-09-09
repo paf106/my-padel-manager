@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { classStudents, classes, students } from "@/lib/db/schema";
 import { inArray } from "drizzle-orm";
 import { validateClassStudentCount } from "@/lib/billing";
+import { requireUser } from "@/lib/auth";
 
 const schema = z.object({
   type: z.enum(["individual", "pair", "group"]),
@@ -18,6 +19,7 @@ const schema = z.object({
 });
 
 export async function createClass(formData: FormData) {
+  await requireUser();
   const studentIds = formData.getAll("studentIds").map(String);
   const raw = Object.fromEntries(formData);
   const result = schema.safeParse({

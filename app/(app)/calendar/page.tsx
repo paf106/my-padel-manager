@@ -7,13 +7,13 @@ import { db } from "@/lib/db";
 import { classes } from "@/lib/db/schema";
 import { Fab } from "@/components/ui/fab";
 import { PageHeader } from "@/components/ui/page-header";
+import { madridMonthRange } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export default async function CalendarPage() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const { start, end } = madridMonthRange(now);
   const rows = await db.select().from(classes).where(and(gte(classes.startsAt, start), lt(classes.startsAt, end))).orderBy(asc(classes.startsAt));
   return (
     <main className="mx-auto min-h-screen max-w-5xl">

@@ -5,11 +5,14 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { buildBillingLines } from "@/lib/billing";
 import { classStudents, classes, paymentLines, payments } from "@/lib/db/schema";
+import { requireUser } from "@/lib/auth";
+import { madridMonthRange } from "@/lib/dates";
 
 export async function generateMonthlyPayments(period: string) {
-  const monthStart = new Date(`${period}-01T00:00:00.000Z`);
-  const monthEnd = new Date(monthStart); monthEnd.setUTCMonth(monthEnd.getUTCMonth() + 1);
-  const completed = await db.select({ padelClass: classes, studentId: classStudents.studentId }).from(classes).innerJoin(classStudents, eq(classes.id, classStudents.classId)).where(and(eq(classes.status, "completed"), gte(classes.startsAt, monthStart), lt(classes.startsAt, monthEnd)));
+  await requireUser();
+  const monthStart = new Date(`${period}-01T12:00:00.000Z`);
+  const { start: periodStart, end: periodEnd } = madridMonthRange(monthStart);
+  const completed = await db.select({ padelClass: classes, studentId: classStudents.studentId }).from(classes).innerJoin(classStudents, eq(classes.id, classStudents.classId)).where(and(eq(classes.status, "completed"), gte(classes.startsAt, periodStart), lt(classes.startsAt, periodEnd)));
   const grouped = new Map<string, typeof completed>();
   for (const row of completed) grouped.set(row.padelClass.id, [...(grouped.get(row.padelClass.id) ?? []), row]);
   const lines = buildBillingLines([...grouped.values()].map((rows) => ({ id: rows[0].padelClass.id, type: rows[0].padelClass.type, courtPriceCents: rows[0].padelClass.courtPriceCents, ratePerStudentCents: rows[0].padelClass.ratePerStudentCents, studentIds: rows.map((row) => row.studentId) })));

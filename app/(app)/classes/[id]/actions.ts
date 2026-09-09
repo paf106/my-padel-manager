@@ -7,8 +7,10 @@ import { db } from "@/lib/db";
 import { classStudents, classes, students } from "@/lib/db/schema";
 import { validateClassStudentCount } from "@/lib/billing";
 import { z } from "zod";
+import { requireUser } from "@/lib/auth";
 
 export async function deleteClass(id: string) {
+  await requireUser();
   await db.delete(classes).where(eq(classes.id, id));
   revalidatePath("/"); revalidatePath("/calendar");
   redirect("/calendar");
@@ -25,6 +27,7 @@ const editSchema = z.object({
 });
 
 export async function updateClass(id: string, formData: FormData) {
+  await requireUser();
   const studentIds = formData.getAll("studentIds").map(String);
   const raw = Object.fromEntries(formData);
   const result = editSchema.safeParse({ ...raw, courtPriceCents: Math.round(Number(raw.courtPriceCents) * 100), ratePerStudentCents: Math.round(Number(raw.ratePerStudentCents) * 100) });

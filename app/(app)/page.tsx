@@ -8,20 +8,21 @@ import { classes, payments } from "@/lib/db/schema";
 import { RevenueChart } from "@/components/revenue-chart";
 import { Fab } from "@/components/ui/fab";
 import { formatMoney } from "@/lib/format";
+import { madridMonthKey, madridMonthRange, madridNextMonthStartKey, madridRecentMonthStartKey } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const { start: monthStart } = madridMonthRange(now);
+  const today = monthStart;
   const nextWeek = new Date(today);
   nextWeek.setDate(today.getDate() + 7);
-  const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const period = `${madridMonthKey(now)}-01`;
   const [upcoming, currentPayments, recentPayments] = await Promise.all([
     db.select().from(classes).where(and(gte(classes.startsAt, today), lt(classes.startsAt, nextWeek))).orderBy(asc(classes.startsAt)).limit(3),
-    db.select({ period: payments.period, paid: payments.paidAmountCents, computed: payments.computedAmountCents, override: payments.overrideAmountCents }).from(payments).where(and(gte(payments.period, period), lt(payments.period, nextMonth.toISOString().slice(0, 10)))),
-    db.select({ period: payments.period, paid: payments.paidAmountCents }).from(payments).where(gte(payments.period, new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString().slice(0, 10))),
+    db.select({ period: payments.period, paid: payments.paidAmountCents, computed: payments.computedAmountCents, override: payments.overrideAmountCents }).from(payments).where(and(gte(payments.period, period), lt(payments.period, madridNextMonthStartKey(now)))),
+    db.select({ period: payments.period, paid: payments.paidAmountCents }).from(payments).where(gte(payments.period, madridRecentMonthStartKey(now))),
   ]);
   const chartData = Array.from({ length: 6 }, (_, index) => {
     const date = new Date(now.getFullYear(), now.getMonth() - 5 + index, 1);

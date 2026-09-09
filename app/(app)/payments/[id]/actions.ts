@@ -4,8 +4,10 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
+import { requireUser } from "@/lib/auth";
 
 export async function updatePayment(id: string, formData: FormData) {
+  await requireUser();
   const amount = Math.round(Number(formData.get("paidAmount")) * 100);
   const overrideRaw = String(formData.get("overrideAmount") ?? "").trim();
   const overrideAmount = overrideRaw ? Math.round(Number(overrideRaw) * 100) : null;

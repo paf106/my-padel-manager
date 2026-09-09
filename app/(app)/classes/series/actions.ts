@@ -7,12 +7,14 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { classSeries, classStudents, classes, students } from "@/lib/db/schema";
 import { inArray } from "drizzle-orm";
+import { requireUser } from "@/lib/auth";
 
 const seriesSchema = z.object({
   type: z.enum(["individual", "pair", "group"]), weekday: z.coerce.number().int().min(0).max(6), timeOfDay: z.string().regex(/^\d{2}:\d{2}$/), startsOn: z.string().min(1), weeks: z.coerce.number().int().min(1).max(52), durationMin: z.coerce.number().int().positive(), courtPriceCents: z.coerce.number().int().nonnegative(), ratePerStudentCents: z.coerce.number().int().nonnegative(),
 });
 
 export async function createSeries(formData: FormData) {
+  await requireUser();
   const studentIds = formData.getAll("studentIds").map(String);
   const raw = Object.fromEntries(formData);
   const result = seriesSchema.safeParse({ ...raw, weekday: Number(raw.weekday), weeks: Number(raw.weeks), durationMin: Number(raw.durationMin), courtPriceCents: Math.round(Number(raw.courtPriceCents) * 100), ratePerStudentCents: Math.round(Number(raw.ratePerStudentCents) * 100) });

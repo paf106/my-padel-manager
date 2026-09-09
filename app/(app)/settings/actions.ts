@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { appSettings } from "@/lib/db/schema";
+import { requireUser } from "@/lib/auth";
 
 export async function updateSettings(formData: FormData) {
+  await requireUser();
   const value = (name: string) => Math.round(Number(formData.get(name)) * 100);
   const prices = {
     defaultCourtPriceCents: value("defaultCourtPriceCents"),

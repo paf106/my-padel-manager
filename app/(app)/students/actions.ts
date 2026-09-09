@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { students } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { requireUser } from "@/lib/auth";
 
 const studentSchema = z.object({
   firstName: z.string().trim().min(1, "El nombre es obligatorio").max(80),
@@ -17,6 +18,7 @@ const studentSchema = z.object({
 });
 
 export async function createStudent(formData: FormData) {
+  await requireUser();
   const result = studentSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) redirect("/students/new?error=invalid");
 
@@ -30,6 +32,7 @@ export async function createStudent(formData: FormData) {
 }
 
 export async function updateStudent(id: string, formData: FormData) {
+  await requireUser();
   const result = studentSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) redirect(`/students/${id}/edit?error=invalid`);
 
