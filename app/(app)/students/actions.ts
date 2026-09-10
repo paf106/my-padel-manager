@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { students } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 const studentSchema = z.object({
   firstName: z.string().trim().min(1, "El nombre es obligatorio").max(80),
@@ -28,6 +29,7 @@ export async function createStudent(formData: FormData) {
     phone: result.data.phone || null,
   });
   revalidatePath("/students");
+  revalidateTag("active-students", "max");
   redirect("/students");
 }
 
@@ -44,5 +46,6 @@ export async function updateStudent(id: string, formData: FormData) {
   }).where(eq(students.id, id));
   revalidatePath("/students");
   revalidatePath(`/students/${id}`);
+  revalidateTag("active-students", "max");
   redirect(`/students/${id}`);
 }

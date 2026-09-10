@@ -5,6 +5,7 @@ import { updateStudent } from "../../actions";
 import { BackLink } from "@/components/ui/back-link";
 import { Input, Select, Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,8 @@ export default async function EditStudentPage({ params, searchParams }: { params
   const [student] = await db.select().from(students).where(eq(students.id, id));
   if (!student) return <main className="mx-auto max-w-3xl"><BackLink href="/students" label="Volver a alumnos" /><p className="mt-6">Alumno no encontrado.</p></main>;
   return (
-    <main className="mx-auto min-h-screen max-w-3xl pb-12">
-      <BackLink href={`/students/${id}`} label="Volver al alumno" />
-      <h1 className="mt-6 text-3xl font-black">Editar alumno</h1>
+    <main className="mx-auto max-w-3xl">
+      <PageHeader title="Editar alumno" eyebrow="Alumnos" backHref={`/students/${id}`} />
       {error && <Alert>Revisa los datos introducidos.</Alert>}
       <form action={updateStudent.bind(null, id)} className="mt-8 grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 lg:grid-cols-2">
         <Field label="Nombre"><Input name="firstName" required maxLength={80} defaultValue={student.firstName} /></Field>
