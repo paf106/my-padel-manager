@@ -8,6 +8,7 @@ import { classStudents, classes, students } from "@/lib/db/schema";
 import { validateClassStudentCount } from "@/lib/billing";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
+import { madridFromLocalInput } from "@/lib/dates";
 
 export async function deleteClass(id: string) {
   await requireUser();
@@ -31,7 +32,7 @@ export async function updateClass(id: string, formData: FormData) {
   const studentIds = formData.getAll("studentIds").map(String);
   const raw = Object.fromEntries(formData);
   const result = editSchema.safeParse({ ...raw, courtPriceCents: Math.round(Number(raw.courtPriceCents) * 100), ratePerStudentCents: Math.round(Number(raw.ratePerStudentCents) * 100) });
-  const startsAt = result.success ? new Date(result.data.startsAt) : null;
+  const startsAt = result.success ? madridFromLocalInput(result.data.startsAt) : null;
   if (!result.success || !startsAt || Number.isNaN(startsAt.getTime()) || !validateClassStudentCount(result.data.type, studentIds.length)) redirect(`/classes/${id}/edit?error=invalid`);
   if (studentIds.length !== new Set(studentIds).size) redirect(`/classes/${id}/edit?error=invalid`);
   const validStudents = await db.select({ id: students.id }).from(students).where(inArray(students.id, studentIds));

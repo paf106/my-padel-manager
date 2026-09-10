@@ -7,5 +7,5 @@ export default defineConfig({
       "@": fileURLToPath(new URL(".", import.meta.url)),
     },
   },
-  test: { environment: "node" },
+  test: { environment: "node", env: { TZ: "Europe/Madrid" } },
 });

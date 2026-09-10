@@ -9,7 +9,7 @@ export function parseCalendarMonth(year?: string, month?: string) {
   const current = madridMonthKey().split("-").map(Number);
   const parsedYear = Number(year);
   const parsedMonth = Number(month);
-  return Number.isInteger(parsedYear) && Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? { year: parsedYear, month: parsedMonth } : { year: current[0], month: current[1] };
+  return Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= 2100 && Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? { year: parsedYear, month: parsedMonth } : { year: current[0], month: current[1] };
 }
 
 export function getPreviousMonth(year: number, month: number) { return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 }; }

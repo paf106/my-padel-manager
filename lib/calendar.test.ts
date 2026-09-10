@@ -7,6 +7,11 @@ describe("calendar helpers", () => {
     expect(parseCalendarMonth("2026", "13").month).toBeLessThanOrEqual(12);
   });
 
+  it("falls back for years outside the supported calendar range", () => {
+    const parsed = parseCalendarMonth("999999", "5");
+    expect(parsed.year).toBe(parseCalendarMonth().year);
+  });
+
   it("starts September 2026 on Tuesday with one Monday placeholder", () => {
     const { cells } = getCalendarDays(2026, 9);
     expect(cells[0]).toBeNull();

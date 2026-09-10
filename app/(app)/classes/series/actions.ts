@@ -1,6 +1,5 @@
 "use server";
 
-import { addWeeks, startOfDay } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -8,6 +7,7 @@ import { db } from "@/lib/db";
 import { classSeries, classStudents, classes, students } from "@/lib/db/schema";
 import { inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
+import { madridFromLocalInput, madridSeriesDateKeys } from "@/lib/dates";
 
 const seriesSchema = z.object({
   type: z.enum(["individual", "pair", "group"]), weekday: z.coerce.number().int().min(0).max(6), timeOfDay: z.string().regex(/^\d{2}:\d{2}$/), startsOn: z.string().min(1), weeks: z.coerce.number().int().min(1).max(52), durationMin: z.coerce.number().int().positive(), courtPriceCents: z.coerce.number().int().nonnegative(), ratePerStudentCents: z.coerce.number().int().nonnegative(),
@@ -23,16 +23,11 @@ export async function createSeries(formData: FormData) {
   if (studentIds.length !== new Set(studentIds).size) redirect("/classes/series/new?error=invalid");
   const validStudents = await db.select({ id: students.id }).from(students).where(inArray(students.id, studentIds));
   if (validStudents.length !== new Set(studentIds).size) redirect("/classes/series/new?error=invalid");
-  const startsOn = startOfDay(new Date(result.data.startsOn));
-  if (Number.isNaN(startsOn.getTime())) redirect("/classes/series/new?error=invalid");
-  const firstDate = new Date(startsOn); firstDate.setDate(firstDate.getDate() + (result.data.weekday - firstDate.getDay() + 7) % 7);
+  const dateKeys = madridSeriesDateKeys(result.data.startsOn, result.data.weekday, result.data.weeks);
   await db.transaction(async (tx) => {
     const [series] = await tx.insert(classSeries).values({ type: result.data.type, weekday: result.data.weekday, timeOfDay: result.data.timeOfDay, durationMin: result.data.durationMin, courtPriceCents: result.data.courtPriceCents, ratePerStudentCents: result.data.ratePerStudentCents, startsOn: result.data.startsOn }).returning({ id: classSeries.id });
-    for (let index = 0; index < result.data.weeks; index++) {
-      const date = addWeeks(firstDate, index);
-      const [created] = await tx.insert(classes).values({ seriesId: series.id, type: result.data.type, startsAt: new Date(`${date.toISOString().slice(0, 10)}T${result.data.timeOfDay}:00`), durationMin: result.data.durationMin, courtPriceCents: result.data.courtPriceCents, ratePerStudentCents: result.data.ratePerStudentCents }).returning({ id: classes.id });
-      await tx.insert(classStudents).values(studentIds.map((studentId) => ({ classId: created.id, studentId })));
-    }
+    const created = await tx.insert(classes).values(dateKeys.map((dateKey) => ({ seriesId: series.id, type: result.data.type, startsAt: madridFromLocalInput(`${dateKey}T${result.data.timeOfDay}`), durationMin: result.data.durationMin, courtPriceCents: result.data.courtPriceCents, ratePerStudentCents: result.data.ratePerStudentCents }))).returning({ id: classes.id });
+    await tx.insert(classStudents).values(created.flatMap(({ id }) => studentIds.map((studentId) => ({ classId: id, studentId }))));
   });
   revalidatePath("/"); revalidatePath("/calendar"); redirect("/calendar");
 }
