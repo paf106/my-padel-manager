@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NavLink } from "@/components/ui/nav-link";
+import { requireUser } from "@/lib/auth";
 
 const items = [
   ["/", "Inicio", "home"],
@@ -9,7 +10,8 @@ const items = [
   ["/settings", "Ajustes", "settings"],
 ] as const;
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  await requireUser();
   return (
     <div className="min-h-screen lg:pl-64">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-8 lg:flex">
@@ -21,7 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {items.map(([href, label, Icon]) => <NavLink key={href} href={href} label={label} icon={Icon} variant="sidebar" />)}
         </nav>
       </aside>
-      <div className="mx-auto min-h-screen max-w-7xl px-4 pb-[calc(var(--bottom-nav-h)+5rem)] pt-6 sm:px-6 lg:px-10 lg:pb-10 lg:pt-10">{children}</div>
+      <div className="mx-auto max-w-7xl px-4 pb-[calc(var(--bottom-nav-h)+5rem)] pt-6 sm:px-6 lg:px-10 lg:pb-10 lg:pt-10">{children}</div>
       <nav className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t border-slate-200 bg-[#f6f7f2]/95 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden" aria-label="Navegación principal">
         {items.slice(0, 4).map(([href, label, Icon]) => <NavLink key={href} href={href} label={label} icon={Icon} variant="bottom" />)}
       </nav>

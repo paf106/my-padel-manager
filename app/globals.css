@@ -13,7 +13,7 @@
   --color-primary-hover: #065f46;
   --color-primary-soft: #d1fae5;
   --color-hero: #064e3b;
-  --color-muted: #64748b;
+  --color-muted: #475569;
   --color-border: #e2e8f0;
   --color-danger: #b91c1c;
   --font-sans: var(--font-manrope);
@@ -27,6 +27,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+}
+
+main.mx-auto.min-h-screen {
+  min-height: auto;
+  padding-bottom: 0;
 }
 
 button, a, input, select, textarea {
