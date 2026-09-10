@@ -16,7 +16,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const { year, month } = parseCalendarMonth(params.year, params.month);
   const monthDays = getCalendarDays(year, month);
   const selectedDay = params.day ?? monthDays.cells.find((cell) => cell?.isToday)?.date ?? monthDays.cells.find(Boolean)?.date ?? `${year}-${String(month).padStart(2, "0")}-01`;
-  const stripDays = getStripDays(selectedDay);
+  const stripDays = getStripDays(year, month);
   const firstStrip = new Date(`${stripDays[0].date}T00:00:00.000Z`);
   const lastStrip = new Date(`${stripDays.at(-1)!.date}T00:00:00.000Z`);
   const rangeStart = madridMonthRange(firstStrip).start;

@@ -45,10 +45,9 @@ export function getWeekStartKey(dateKey: string) {
   return addDays(dateKey, weekday === 0 ? -6 : 1 - weekday);
 }
 
-export function getStripDays(selectedDay: string) {
-  const selected = new Date(`${selectedDay}T00:00:00.000Z`);
-  const monthBefore = new Date(Date.UTC(selected.getUTCFullYear(), selected.getUTCMonth() - 1, 1));
-  const monthAfter = new Date(Date.UTC(selected.getUTCFullYear(), selected.getUTCMonth() + 2, 0));
+export function getStripDays(year: number, month: number) {
+  const monthBefore = new Date(Date.UTC(year, month - 2, 1));
+  const monthAfter = new Date(Date.UTC(year, month + 1, 0));
   const firstKey = `${monthBefore.getUTCFullYear()}-${String(monthBefore.getUTCMonth() + 1).padStart(2, "0")}-01`;
   const lastKey = `${monthAfter.getUTCFullYear()}-${String(monthAfter.getUTCMonth() + 1).padStart(2, "0")}-${String(monthAfter.getUTCDate()).padStart(2, "0")}`;
   let current = getWeekStartKey(firstKey);

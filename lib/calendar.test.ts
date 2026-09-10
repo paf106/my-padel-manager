@@ -23,7 +23,7 @@ describe("calendar helpers", () => {
   });
 
   it("builds a strip spanning the surrounding months", () => {
-    const days = getStripDays("2026-09-10");
+    const days = getStripDays(2026, 9);
     expect(days[0].weekdayLabel).toMatch(/lun/i);
     expect(days.some((day) => day.date.startsWith("2026-08"))).toBe(true);
     expect(days.some((day) => day.date.startsWith("2026-10"))).toBe(true);
