@@ -16,7 +16,7 @@
   --color-muted: #64748b;
   --color-border: #e2e8f0;
   --color-danger: #b91c1c;
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-manrope);
 }
 
 * {
