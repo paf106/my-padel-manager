@@ -2,11 +2,10 @@
 
 import { useCallback } from "react";
 
-export function StripScroller({ selectedWeek, children }: { selectedWeek?: string; children: React.ReactNode }) {
+export function StripScroller({ weekIndex, children }: { weekIndex: number; children: React.ReactNode }) {
   const setNode = useCallback((node: HTMLDivElement | null) => {
-    if (!node || !selectedWeek) return;
-    const target = node.querySelector<HTMLElement>(`[data-week="${selectedWeek}"]`);
-    if (target) node.scrollLeft = target.offsetLeft;
-  }, [selectedWeek]);
-  return <div ref={setNode}>{children}</div>;
+    if (!node || weekIndex < 0) return;
+    node.scrollLeft = weekIndex * node.clientWidth;
+  }, [weekIndex]);
+  return <div ref={setNode} className="flex snap-x snap-mandatory overflow-x-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{children}</div>;
 }
