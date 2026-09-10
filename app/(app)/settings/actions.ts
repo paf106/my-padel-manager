@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { appSettings } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 export async function updateSettings(formData: FormData) {
   await requireUser();
@@ -19,4 +20,5 @@ export async function updateSettings(formData: FormData) {
   await db.insert(appSettings).values({ id: 1, ...prices }).onConflictDoUpdate({ target: appSettings.id, set: prices });
   revalidatePath("/settings");
   revalidatePath("/classes/new");
+  revalidateTag("app-settings", "max");
 }
