@@ -3,6 +3,7 @@ import {
   check,
   date,
   integer,
+  index,
   pgEnum,
   pgTable,
   primaryKey,
@@ -46,7 +47,7 @@ export const students = pgTable("students", {
   phone: text("phone"),
   active: boolean("active").notNull().default(true),
   ...timestamps,
-});
+}, (table) => [index("students_last_name_first_name_idx").on(table.lastName, table.firstName)]);
 
 export const classSeries = pgTable("class_series", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -72,12 +73,19 @@ export const classes = pgTable("classes", {
   ratePerStudentCents: integer("rate_per_student_cents").notNull(),
   notes: text("notes"),
   ...timestamps,
-});
+}, (table) => [
+  index("classes_series_id_idx").on(table.seriesId),
+  index("classes_starts_at_idx").on(table.startsAt),
+  index("classes_status_starts_at_idx").on(table.status, table.startsAt),
+]);
 
 export const classStudents = pgTable("class_students", {
   classId: uuid("class_id").notNull().references(() => classes.id, { onDelete: "cascade" }),
   studentId: uuid("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
-}, (table) => [primaryKey({ columns: [table.classId, table.studentId] })]);
+}, (table) => [
+  primaryKey({ columns: [table.classId, table.studentId] }),
+  index("class_students_student_id_idx").on(table.studentId),
+]);
 
 export const payments = pgTable("payments", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -93,6 +101,7 @@ export const payments = pgTable("payments", {
   ...timestamps,
 }, (table) => [
   unique("payments_student_period_unique").on(table.studentId, table.period),
+  index("payments_period_idx").on(table.period),
   check("payments_period_first_day_check", sql`extract(day from ${table.period}) = 1`),
   check("payments_amounts_nonnegative_check", sql`${table.computedAmountCents} >= 0 and ${table.paidAmountCents} >= 0 and (${table.overrideAmountCents} is null or ${table.overrideAmountCents} >= 0)`),
 ]);
@@ -104,7 +113,10 @@ export const paymentLines = pgTable("payment_lines", {
   classShareCents: integer("class_share_cents").notNull(),
   courtShareCents: integer("court_share_cents").notNull(),
   amountCents: integer("amount_cents").notNull(),
-}, (table) => [primaryKey({ columns: [table.paymentId, table.classId] })]);
+}, (table) => [
+  primaryKey({ columns: [table.paymentId, table.classId] }),
+  index("payment_lines_class_id_idx").on(table.classId),
+]);
 
 export type Student = typeof students.$inferSelect;
 export type NewStudent = typeof students.$inferInsert;
