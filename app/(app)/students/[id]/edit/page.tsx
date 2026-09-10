@@ -4,6 +4,7 @@ import { students } from "@/lib/db/schema";
 import { updateStudent } from "../../actions";
 import { BackLink } from "@/components/ui/back-link";
 import { Input, Select, Field } from "@/components/ui/field";
+import { Alert } from "@/components/ui/alert";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function EditStudentPage({ params, searchParams }: { params
     <main className="mx-auto min-h-screen max-w-3xl pb-12">
       <BackLink href={`/students/${id}`} label="Volver al alumno" />
       <h1 className="mt-6 text-3xl font-black">Editar alumno</h1>
-      {error && <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700" role="alert">Revisa los datos introducidos.</p>}
+      {error && <Alert>Revisa los datos introducidos.</Alert>}
       <form action={updateStudent.bind(null, id)} className="mt-8 grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 lg:grid-cols-2">
         <Field label="Nombre"><Input name="firstName" required maxLength={80} defaultValue={student.firstName} /></Field>
         <Field label="Apellidos"><Input name="lastName" required maxLength={120} defaultValue={student.lastName} /></Field>

@@ -9,7 +9,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
+  --color-primary: #047857;
+  --color-primary-hover: #065f46;
+  --color-primary-soft: #d1fae5;
+  --color-hero: #064e3b;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-danger: #b91c1c;
+  --font-sans: var(--font-sans);
 }
 
 * {
@@ -19,7 +26,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
 }
 
 button, a, input, select, textarea {
@@ -27,10 +34,10 @@ button, a, input, select, textarea {
 }
 
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 3px solid #e7b84b;
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 ::selection {
-  background: #b9d9c2;
+  background: var(--color-primary-soft);
 }

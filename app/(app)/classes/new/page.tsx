@@ -5,6 +5,7 @@ import { createClass } from "../actions";
 import { BackLink } from "@/components/ui/back-link";
 import { Input, Select, Textarea, Field } from "@/components/ui/field";
 import { MoneyInput } from "@/components/ui/money-input";
+import { Alert } from "@/components/ui/alert";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function NewClassPage({ searchParams }: { searchParams: Pro
     <main className="mx-auto min-h-screen max-w-3xl pb-12">
       <BackLink href="/calendar" label="Volver al calendario" />
       <h1 className="mt-6 text-3xl font-black">Nueva clase</h1>
-      {error && <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700">El tipo de clase debe coincidir con el número de alumnos.</p>}
+      {error && <Alert>El tipo de clase debe coincidir con el número de alumnos.</Alert>}
       <form action={createClass} className="mt-8 grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 lg:grid-cols-2">
         <Field label="Tipo"><Select name="type" defaultValue="individual"><option value="individual">Individual · 1 alumno</option><option value="pair">Pareja · 2 alumnos</option><option value="group">Grupo · 3 o 4 alumnos</option></Select></Field>
         <Field label="Fecha y hora"><Input name="startsAt" type="datetime-local" required /></Field>
