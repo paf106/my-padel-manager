@@ -13,7 +13,8 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: claims } = await supabase.auth.getClaims();
+  const user = claims?.claims?.sub ? claims.claims : null;
   const isLogin = request.nextUrl.pathname === "/login";
   if (!user && !isLogin) return NextResponse.redirect(new URL("/login", request.url));
   if (user && isLogin) return NextResponse.redirect(new URL("/", request.url));

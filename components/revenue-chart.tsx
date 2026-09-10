@@ -1,7 +1,23 @@
 "use client";
 
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+
+const RevenueChartPlot = lazy(() => import("./revenue-chart-plot"));
 
 export function RevenueChart({ data }: { data: { label: string; amount: number }[] }) {
-  return <div className="h-48 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={data} margin={{ top: 8, right: 0, left: -24, bottom: 0 }}><XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "#a7b4ad", fontSize: 10 }} /><YAxis hide /><Tooltip cursor={{ fill: "rgba(255,255,255,0.06)" }} formatter={(value) => [`${Number(value).toFixed(2)} €`, "Ingresos"]} contentStyle={{ borderRadius: 12, border: "none", background: "#173d2b", color: "white" }} /><Bar dataKey="amount" fill="#54c982" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer></div>;
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { if (!ref.current || !("IntersectionObserver" in window)) { setVisible(true); return; } const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } }, { rootMargin: "200px" }); observer.observe(ref.current); return () => observer.disconnect(); }, []);
+  return (
+    <div ref={ref} aria-label="Gráfico de ingresos" role="img">
+      <div className="h-48 w-full">
+        {visible ? <Suspense fallback={<div className="h-full animate-pulse rounded-xl bg-white/5" aria-hidden="true" />}><RevenueChartPlot data={data} /></Suspense> : <div className="h-full" aria-hidden="true" />}
+      </div>
+      <table className="sr-only">
+        <caption>Ingresos por periodo</caption>
+        <thead><tr><th scope="col">Periodo</th><th scope="col">Ingresos</th></tr></thead>
+        <tbody>{data.map((item) => <tr key={item.label}><th scope="row">{item.label}</th><td>{item.amount.toFixed(2)} €</td></tr>)}</tbody>
+      </table>
+    </div>
+  );
 }
