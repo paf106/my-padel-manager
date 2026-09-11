@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
-import { format } from "date-fns";
 import { db } from "@/lib/db";
 import { classes, paymentLines, payments, students } from "@/lib/db/schema";
 import { updatePayment } from "./actions";
@@ -9,6 +8,7 @@ import { Input, Select, Textarea, Field } from "@/components/ui/field";
 import { MoneyInput } from "@/components/ui/money-input";
 import { formatMoney } from "@/lib/format";
 import { classTypeLabels } from "@/lib/labels";
+import { madridDateTime } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +99,7 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
                 className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm transition hover:border-emerald-300 hover:bg-emerald-50"
               >
                 <span>
-                  <strong>{format(padelClass.startsAt, "d/MM · HH:mm")}</strong>
+                  <strong>{madridDateTime(padelClass.startsAt)}</strong>
                   <span className="ml-2 text-slate-500">{classTypeLabels[padelClass.type]}</span>
                 </span>
                 <strong>{formatMoney(line.amountCents)}</strong>

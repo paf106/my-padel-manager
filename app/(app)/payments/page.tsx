@@ -11,7 +11,7 @@ import { ClickableRow } from "@/components/ui/clickable-row";
 import { PaymentPeriodNavigation } from "@/components/payments/payment-period-navigation";
 import { formatMoney } from "@/lib/format";
 import { paymentMethodLabels, paymentStatus, paymentStatusLabels } from "@/lib/labels";
-import { madridMonthKey } from "@/lib/dates";
+import { madridMonthKey, madridMonthLabel } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,7 @@ export default async function PaymentsPage({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm text-emerald-200">Periodo seleccionado</p>
-            <p className="mt-1 text-xl font-black">{period}</p>
+            <p className="mt-1 text-xl font-black capitalize">{madridMonthLabel(period)}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <PaymentPeriodNavigation period={period} />
@@ -151,11 +151,16 @@ function PaymentCard({
 }) {
   const due = payment.overrideAmountCents ?? payment.computedAmountCents;
   const status = paymentStatus(payment.paidAmountCents, due);
+  const progress = due > 0 ? Math.min(100, (payment.paidAmountCents / due) * 100) : 0;
+  const confirmLabel =
+    payment.paidAmountCents > 0
+      ? `Este pago tiene ${formatMoney(payment.paidAmountCents)} cobrados. Se eliminará junto con su desglose de clases.`
+      : "El pago y su desglose se eliminarán definitivamente.";
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/50">
       <Link href={`/payments/${payment.id}`} className="block">
         <div className="flex items-center justify-between">
-          <p className="font-black">
+          <p className="font-black tracking-tight">
             {student.firstName} {student.lastName}
           </p>
           <Badge
@@ -164,20 +169,46 @@ function PaymentCard({
             {paymentStatusLabels[status]}
           </Badge>
         </div>
-        <div className="mt-3 flex justify-between text-sm text-slate-500">
-          <span>
-            {formatMoney(payment.paidAmountCents)} de {formatMoney(due)}
+        <div className="mt-4 flex items-baseline justify-between gap-3">
+          <p className="tabular-nums">
+            <strong className="text-lg font-black">{formatMoney(payment.paidAmountCents)}</strong>
+            <span className="ml-1 text-sm text-slate-400">de {formatMoney(due)}</span>
+          </p>
+          <span className="text-xs font-bold text-slate-500">
+            Pendiente {formatMoney(Math.max(0, due - payment.paidAmountCents))}
           </span>
-          <span>{payment.method ? paymentMethodLabels[payment.method] : "Sin método"}</span>
+        </div>
+        <div
+          className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"
+          role="progressbar"
+          aria-label="Progreso del pago"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={`h-full rounded-full ${status === "completed" ? "bg-emerald-600" : status === "partial" ? "bg-amber-500" : "bg-red-500"}`}
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </Link>
-      <div className="mt-3">
+      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+        <Badge tone="neutral">
+          {payment.method ? paymentMethodLabels[payment.method] : "Sin método"}
+        </Badge>
         <ConfirmButton
-          label="Eliminar pago"
-          confirmLabel="El pago y su desglose se eliminarán definitivamente."
+          label={<Trash2 size={18} />}
+          ariaLabel={`Eliminar pago de ${student.firstName} ${student.lastName}`}
+          confirmLabel={confirmLabel}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-red-700 hover:bg-red-50"
         >
           <form action={deletePayment.bind(null, payment.id)}>
-            <button className="text-sm font-bold text-red-700">Eliminar pago</button>
+            <button
+              aria-label="Confirmar eliminación"
+              className="min-h-11 rounded-xl bg-red-700 px-4 py-3 text-sm font-bold text-white"
+            >
+              Eliminar
+            </button>
           </form>
         </ConfirmButton>
       </div>
