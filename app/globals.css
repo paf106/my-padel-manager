@@ -19,6 +19,64 @@
   --font-sans: var(--font-manrope);
 }
 
+@keyframes skeleton-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes student-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.student-dialog[open] {
+  animation: student-dialog-in 180ms ease-out;
+}
+
+.skeleton {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.skeleton::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 75%), transparent);
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton--dark {
+  background: rgb(255 255 255 / 10%);
+}
+
+.skeleton--dark::after {
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 20%), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+
+  .student-dialog[open] {
+    animation: none;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const RevenueChartPlot = lazy(() => import("./revenue-chart-plot"));
 
@@ -28,11 +29,7 @@ export function RevenueChart({ data }: { data: { label: string; amount: number }
     <div ref={ref} aria-label="Gráfico de ingresos" role="img">
       <div className="h-48 w-full">
         {visible ? (
-          <Suspense
-            fallback={
-              <div className="h-full animate-pulse rounded-xl bg-white/5" aria-hidden="true" />
-            }
-          >
+          <Suspense fallback={<Skeleton tone="dark" className="h-full rounded-xl" />}>
             <RevenueChartPlot data={data} />
           </Suspense>
         ) : (

@@ -1,8 +1,21 @@
+import { Skeleton, SkeletonScreen } from "@/components/ui/skeleton";
+import {
+  MobileCardsSkeleton,
+  PageHeaderSkeleton,
+  TableSkeleton,
+} from "@/components/skeletons/page-skeletons";
+
 export default function StudentsLoading() {
   return (
-    <div className="space-y-4" aria-label="Cargando alumnos">
-      <div className="h-12 animate-pulse rounded-xl bg-slate-200" />
-      <div className="h-96 animate-pulse rounded-2xl bg-white" />
-    </div>
+    <SkeletonScreen label="Cargando alumnos" width="list">
+      <PageHeaderSkeleton action="button" />
+      <Skeleton className="mt-6 h-12 w-full max-w-2xl rounded-xl" />
+      <div className="mt-8 lg:hidden">
+        <MobileCardsSkeleton />
+      </div>
+      <div className="mt-8 hidden lg:block">
+        <TableSkeleton columns={5} />
+      </div>
+    </SkeletonScreen>
   );
 }
