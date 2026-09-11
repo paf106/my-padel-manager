@@ -1,11 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-
-
   allowedDevOrigins: ['192.168.1.52'],
-
-  /* config options here */
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'date-fns-tz', 'recharts'],
+  },
 };
 
 export default nextConfig;
