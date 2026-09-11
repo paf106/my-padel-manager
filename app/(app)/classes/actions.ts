@@ -28,16 +28,26 @@ export async function createClass(formData: FormData) {
     courtPriceCents: Math.round(Number(raw.courtPriceCents) * 100),
     ratePerStudentCents: Math.round(Number(raw.ratePerStudentCents) * 100),
   });
-  if (!result.success || !validateClassStudentCount(result.data.type, studentIds.length)) redirect("/classes/new?error=invalid");
+  if (!result.success || !validateClassStudentCount(result.data.type, studentIds.length))
+    redirect("/classes/new?error=invalid");
   if (studentIds.length !== new Set(studentIds).size) redirect("/classes/new?error=invalid");
-  const validStudents = await db.select({ id: students.id }).from(students).where(inArray(students.id, studentIds));
+  const validStudents = await db
+    .select({ id: students.id })
+    .from(students)
+    .where(inArray(students.id, studentIds));
   if (validStudents.length !== new Set(studentIds).size) redirect("/classes/new?error=invalid");
   const startsAt = madridFromLocalInput(result.data.startsAt);
   if (Number.isNaN(startsAt.getTime())) redirect("/classes/new?error=invalid");
   await db.transaction(async (tx) => {
-    const [created] = await tx.insert(classes).values({ ...result.data, startsAt, notes: result.data.notes || null }).returning({ id: classes.id });
-    await tx.insert(classStudents).values(studentIds.map((studentId) => ({ classId: created.id, studentId })));
+    const [created] = await tx
+      .insert(classes)
+      .values({ ...result.data, startsAt, notes: result.data.notes || null })
+      .returning({ id: classes.id });
+    await tx
+      .insert(classStudents)
+      .values(studentIds.map((studentId) => ({ classId: created.id, studentId })));
   });
-  revalidatePath("/"); revalidatePath("/calendar");
+  revalidatePath("/");
+  revalidatePath("/calendar");
   redirect("/calendar");
 }

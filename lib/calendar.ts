@@ -9,11 +9,20 @@ export function parseCalendarMonth(year?: string, month?: string) {
   const current = madridMonthKey().split("-").map(Number);
   const parsedYear = Number(year);
   const parsedMonth = Number(month);
-  return Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= 2100 && Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? { year: parsedYear, month: parsedMonth } : { year: current[0], month: current[1] };
+  const validYear = Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= 2100;
+  const validMonth = Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12;
+  return {
+    year: validYear ? parsedYear : current[0],
+    month: validMonth ? parsedMonth : current[1],
+  };
 }
 
-export function getPreviousMonth(year: number, month: number) { return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 }; }
-export function getNextMonth(year: number, month: number) { return month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 }; }
+export function getPreviousMonth(year: number, month: number) {
+  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+}
+export function getNextMonth(year: number, month: number) {
+  return month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+}
 
 export function buildCalendarHref(path: string, year: number, month: number, day?: string) {
   const params = new URLSearchParams({ year: String(year), month: String(month) });
@@ -51,13 +60,25 @@ export function getStripDays(year: number, month: number) {
   const firstKey = `${monthBefore.getUTCFullYear()}-${String(monthBefore.getUTCMonth() + 1).padStart(2, "0")}-01`;
   const lastKey = `${monthAfter.getUTCFullYear()}-${String(monthAfter.getUTCMonth() + 1).padStart(2, "0")}-${String(monthAfter.getUTCDate()).padStart(2, "0")}`;
   let current = getWeekStartKey(firstKey);
-  const last = addDays(lastKey, 6 - (new Date(`${lastKey}T00:00:00.000Z`).getUTCDay() === 0 ? 6 : new Date(`${lastKey}T00:00:00.000Z`).getUTCDay() - 1));
+  const last = addDays(
+    lastKey,
+    6 -
+      (new Date(`${lastKey}T00:00:00.000Z`).getUTCDay() === 0
+        ? 6
+        : new Date(`${lastKey}T00:00:00.000Z`).getUTCDay() - 1),
+  );
   const days: StripDay[] = [];
   const today = madridToday();
   while (current <= last) {
     const date = new Date(`${current}T00:00:00.000Z`);
     const dateKey = current;
-    days.push({ date: dateKey, dayNumber: date.getUTCDate(), isToday: dateKey === today, weekdayLabel: format(date, "EEE", { locale: es }), weekStart: getWeekStartKey(dateKey) });
+    days.push({
+      date: dateKey,
+      dayNumber: date.getUTCDate(),
+      isToday: dateKey === today,
+      weekdayLabel: format(date, "EEE", { locale: es }),
+      weekStart: getWeekStartKey(dateKey),
+    });
     current = addDays(current, 1);
   }
   return days;

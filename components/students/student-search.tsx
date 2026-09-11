@@ -40,9 +40,23 @@ export function StudentSearch({ initialQuery }: { initialQuery: string }) {
   return (
     <label className="relative block w-full max-w-xxl">
       <span className="sr-only">Buscar alumnos por nombre o teléfono</span>
-      <Search aria-hidden="true" size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-      <input name="q" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre o teléfono" aria-label="Buscar alumnos por nombre o teléfono" aria-busy={isPending} className={`h-12 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 ${isPending ? "opacity-70" : ""}`} />
-      <span className="sr-only" aria-live="polite">{isPending ? "Buscando alumnos..." : ""}</span>
+      <Search
+        aria-hidden="true"
+        size={18}
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+      />
+      <input
+        name="q"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Buscar por nombre o teléfono"
+        aria-label="Buscar alumnos por nombre o teléfono"
+        aria-busy={isPending}
+        className={`h-12 w-full rounded-xl border border-slate-300 bg-slate-50 pl-10 pr-3 ${isPending ? "opacity-70" : ""}`}
+      />
+      <span className="sr-only" aria-live="polite">
+        {isPending ? "Buscando alumnos..." : ""}
+      </span>
     </label>
   );
 }

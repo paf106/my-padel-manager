@@ -21,9 +21,7 @@ const getExpectedStudentCount = (type: ClassType) =>
 
 export function validateClassStudentCount(type: ClassType, count: number) {
   const expected = getExpectedStudentCount(type);
-  return Array.isArray(expected)
-    ? expected.includes(count)
-    : expected === count;
+  return Array.isArray(expected) ? expected.includes(count) : expected === count;
 }
 
 export function splitCents(totalCents: number, count: number) {

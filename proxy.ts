@@ -6,16 +6,24 @@ const AUTH_USER_HEADER = "x-padel-auth-user";
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete(AUTH_USER_HEADER);
-  const responseCookies: Array<{ name: string; value: string; options?: Parameters<NextResponse["cookies"]["set"]>[2] }> = [];
-  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        responseCookies.push(...cookiesToSet);
+  const responseCookies: Array<{
+    name: string;
+    value: string;
+    options?: Parameters<NextResponse["cookies"]["set"]>[2];
+  }> = [];
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          responseCookies.push(...cookiesToSet);
+        },
       },
     },
-  });
+  );
   const { data: claims } = await supabase.auth.getClaims();
   const user = claims?.claims?.sub ? claims.claims : null;
   const isLogin = request.nextUrl.pathname === "/login";
@@ -27,4 +35,8 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"] };
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+};

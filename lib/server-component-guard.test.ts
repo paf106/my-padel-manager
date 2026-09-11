@@ -6,7 +6,11 @@ function collectPages(directory: string): string[] {
   if (!existsSync(directory)) return [];
   return readdirSync(directory).flatMap((entry) => {
     const path = join(directory, entry);
-    return statSync(path).isDirectory() ? collectPages(path) : path.endsWith("page.tsx") ? [path] : [];
+    return statSync(path).isDirectory()
+      ? collectPages(path)
+      : path.endsWith("page.tsx")
+        ? [path]
+        : [];
   });
 }
 
@@ -16,7 +20,9 @@ describe("server component guard", () => {
     const violations = pages.flatMap((page) => {
       const source = readFileSync(page, "utf8");
       if (source.includes('"use client"') || source.includes("'use client'")) return [];
-      return /on(Change|Click|Submit|Input|KeyDown)=/.test(source) ? [relative(process.cwd(), page)] : [];
+      return /on(Change|Click|Submit|Input|KeyDown)=/.test(source)
+        ? [relative(process.cwd(), page)]
+        : [];
     });
     expect(violations).toEqual([]);
   });

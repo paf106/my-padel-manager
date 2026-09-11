@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { madridDateKey, madridFromLocalInput, madridLocalInputValue, madridMonthKeys, madridMonthRange, madridMonthWindow, madridTime, madridUpcomingRange } from "./dates";
+import {
+  madridDateKey,
+  madridFromLocalInput,
+  madridLocalInputValue,
+  madridMonthKeys,
+  madridMonthRange,
+  madridMonthWindow,
+  madridTime,
+  madridUpcomingRange,
+} from "./dates";
 
 describe("Madrid date boundaries", () => {
   it("keeps a midnight Madrid class on the correct local day", () => {
@@ -21,7 +30,14 @@ describe("Madrid date boundaries", () => {
   });
 
   it("builds chart month keys in Madrid time", () => {
-    expect(madridMonthKeys(new Date("2026-09-15T12:00:00Z"))).toEqual(["2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"]);
+    expect(madridMonthKeys(new Date("2026-09-15T12:00:00Z"))).toEqual([
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07",
+      "2026-08",
+      "2026-09",
+    ]);
   });
 
   it("converts datetime-local values using Madrid time", () => {

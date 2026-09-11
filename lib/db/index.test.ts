@@ -28,7 +28,7 @@ describe("database client", () => {
     expect(postgresMock).toHaveBeenCalledTimes(1);
     expect(postgresMock).toHaveBeenCalledWith("postgresql://test.example/padel", {
       prepare: false,
-       max: 3,
+      max: 3,
       idle_timeout: 20,
       connect_timeout: 10,
     });

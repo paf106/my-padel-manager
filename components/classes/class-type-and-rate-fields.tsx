@@ -23,14 +23,25 @@ export function ClassTypeAndRateFields({ rates }: Props) {
   return (
     <>
       <Field label="Tipo">
-        <Select name="type" value={type} onChange={(event) => handleTypeChange(event.target.value as ClassType)}>
+        <Select
+          name="type"
+          value={type}
+          onChange={(event) => handleTypeChange(event.target.value as ClassType)}
+        >
           <option value="individual">Individual · 1 alumno</option>
           <option value="pair">Pareja · 2 alumnos</option>
           <option value="group">Grupo · 3 o 4 alumnos</option>
         </Select>
       </Field>
       <Field label="Precio clase / alumno">
-        <MoneyInput name="ratePerStudentCents" value={rate} onChange={(event) => { setRateEdited(true); setRate(event.target.value); }} />
+        <MoneyInput
+          name="ratePerStudentCents"
+          value={rate}
+          onChange={(event) => {
+            setRateEdited(true);
+            setRate(event.target.value);
+          }}
+        />
       </Field>
     </>
   );

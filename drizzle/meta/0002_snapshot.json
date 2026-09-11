@@ -206,12 +206,8 @@
           "name": "class_students_class_id_classes_id_fk",
           "tableFrom": "class_students",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -219,12 +215,8 @@
           "name": "class_students_student_id_students_id_fk",
           "tableFrom": "class_students",
           "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -232,10 +224,7 @@
       "compositePrimaryKeys": {
         "class_students_class_id_student_id_pk": {
           "name": "class_students_class_id_student_id_pk",
-          "columns": [
-            "class_id",
-            "student_id"
-          ]
+          "columns": ["class_id", "student_id"]
         }
       },
       "uniqueConstraints": {},
@@ -379,12 +368,8 @@
           "name": "classes_series_id_class_series_id_fk",
           "tableFrom": "classes",
           "tableTo": "class_series",
-          "columnsFrom": [
-            "series_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["series_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -458,12 +443,8 @@
           "name": "payment_lines_payment_id_payments_id_fk",
           "tableFrom": "payment_lines",
           "tableTo": "payments",
-          "columnsFrom": [
-            "payment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["payment_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -471,12 +452,8 @@
           "name": "payment_lines_class_id_classes_id_fk",
           "tableFrom": "payment_lines",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -484,10 +461,7 @@
       "compositePrimaryKeys": {
         "payment_lines_payment_id_class_id_pk": {
           "name": "payment_lines_payment_id_class_id_pk",
-          "columns": [
-            "payment_id",
-            "class_id"
-          ]
+          "columns": ["payment_id", "class_id"]
         }
       },
       "uniqueConstraints": {},
@@ -600,12 +574,8 @@
           "name": "payments_student_id_students_id_fk",
           "tableFrom": "payments",
           "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -615,10 +585,7 @@
         "payments_student_period_unique": {
           "name": "payments_student_period_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "student_id",
-            "period"
-          ]
+          "columns": ["student_id", "period"]
         }
       },
       "policies": {},
@@ -741,48 +708,27 @@
     "public.class_status": {
       "name": "class_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "cancelled",
-        "completed"
-      ]
+      "values": ["pending", "cancelled", "completed"]
     },
     "public.class_type": {
       "name": "class_type",
       "schema": "public",
-      "values": [
-        "individual",
-        "pair",
-        "group"
-      ]
+      "values": ["individual", "pair", "group"]
     },
     "public.gender": {
       "name": "gender",
       "schema": "public",
-      "values": [
-        "male",
-        "female"
-      ]
+      "values": ["male", "female"]
     },
     "public.level": {
       "name": "level",
       "schema": "public",
-      "values": [
-        "intro",
-        "beginner",
-        "intermediate",
-        "advanced",
-        "competition"
-      ]
+      "values": ["intro", "beginner", "intermediate", "advanced", "competition"]
     },
     "public.payment_method": {
       "name": "payment_method",
       "schema": "public",
-      "values": [
-        "cash",
-        "bizum",
-        "transfer"
-      ]
+      "values": ["cash", "bizum", "transfer"]
     }
   },
   "schemas": {},

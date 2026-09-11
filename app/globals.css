@@ -34,11 +34,19 @@ main.mx-auto.min-h-screen {
   padding-bottom: 0;
 }
 
-button, a, input, select, textarea {
+button,
+a,
+input,
+select,
+textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }

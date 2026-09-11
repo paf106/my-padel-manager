@@ -17,7 +17,10 @@ export async function updateSettings(formData: FormData) {
     defaultDurationMin: Number(formData.get("defaultDurationMin")),
   };
   if (Object.values(prices).some((item) => !Number.isInteger(item) || item < 0)) return;
-  await db.insert(appSettings).values({ id: 1, ...prices }).onConflictDoUpdate({ target: appSettings.id, set: prices });
+  await db
+    .insert(appSettings)
+    .values({ id: 1, ...prices })
+    .onConflictDoUpdate({ target: appSettings.id, set: prices });
   revalidatePath("/settings");
   revalidatePath("/classes/new");
   revalidateTag("app-settings", "max");

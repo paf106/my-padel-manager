@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildCalendarHref, getCalendarDays, getStripDays, getWeekStartKey, parseCalendarMonth } from "./calendar";
+import {
+  buildCalendarHref,
+  getCalendarDays,
+  getStripDays,
+  getWeekStartKey,
+  parseCalendarMonth,
+} from "./calendar";
 
 describe("calendar helpers", () => {
   it("falls back to the current month for invalid URL params", () => {
@@ -19,7 +25,9 @@ describe("calendar helpers", () => {
   });
 
   it("preserves month and selected day in calendar links", () => {
-    expect(buildCalendarHref("/calendar", 2026, 9, "2026-09-15")).toBe("/calendar?year=2026&month=9&day=2026-09-15");
+    expect(buildCalendarHref("/calendar", 2026, 9, "2026-09-15")).toBe(
+      "/calendar?year=2026&month=9&day=2026-09-15",
+    );
   });
 
   it("calculates Monday as the start of every week", () => {

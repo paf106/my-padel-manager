@@ -41,7 +41,10 @@ export function madridUpcomingRange(date = new Date(), days = 7) {
   const endDate = new Date(madridDate);
   endDate.setDate(endDate.getDate() + days);
   const endKey = format(endDate, "yyyy-MM-dd");
-  return { start: fromZonedTime(`${startKey}T00:00:00`, MADRID_TIME_ZONE), end: fromZonedTime(`${endKey}T00:00:00`, MADRID_TIME_ZONE) };
+  return {
+    start: fromZonedTime(`${startKey}T00:00:00`, MADRID_TIME_ZONE),
+    end: fromZonedTime(`${endKey}T00:00:00`, MADRID_TIME_ZONE),
+  };
 }
 
 export function madridMonthRange(date = new Date()) {
@@ -85,5 +88,7 @@ export function madridRecentMonthStartKey(date = new Date(), months = 5) {
 
 export function madridMonthKeys(date = new Date(), count = 6) {
   const madridDate = toZonedTime(date, MADRID_TIME_ZONE);
-  return Array.from({ length: count }, (_, index) => format(subMonths(startOfMonth(madridDate), count - 1 - index), "yyyy-MM"));
+  return Array.from({ length: count }, (_, index) =>
+    format(subMonths(startOfMonth(madridDate), count - 1 - index), "yyyy-MM"),
+  );
 }

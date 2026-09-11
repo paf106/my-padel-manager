@@ -38,12 +38,15 @@ export async function updateStudent(id: string, formData: FormData) {
   const result = studentSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) redirect(`/students/${id}/edit?error=invalid`);
 
-  await db.update(students).set({
-    ...result.data,
-    birthDate: result.data.birthDate || null,
-    phone: result.data.phone || null,
-    updatedAt: new Date(),
-  }).where(eq(students.id, id));
+  await db
+    .update(students)
+    .set({
+      ...result.data,
+      birthDate: result.data.birthDate || null,
+      phone: result.data.phone || null,
+      updatedAt: new Date(),
+    })
+    .where(eq(students.id, id));
   revalidatePath("/students");
   revalidatePath(`/students/${id}`);
   revalidateTag("active-students", "max");
