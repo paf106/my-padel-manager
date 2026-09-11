@@ -9,9 +9,9 @@ import { ClassTypeAndRateFields } from "@/components/classes/class-type-and-rate
 export default async function NewSeriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; date?: string }>;
 }) {
-  const [{ error }, current, studentRows] = await Promise.all([
+  const [{ error, date }, current, studentRows] = await Promise.all([
     searchParams,
     getCachedAppSettings(),
     getCachedActiveStudents(),
@@ -52,7 +52,7 @@ export default async function NewSeriesPage({
           </Select>
         </Field>
         <Field label="Primera fecha">
-          <Input name="startsOn" type="date" required />
+          <Input name="startsOn" type="date" required defaultValue={date} />
         </Field>
         <Field label="Hora">
           <Input name="timeOfDay" type="time" required defaultValue="18:00" />

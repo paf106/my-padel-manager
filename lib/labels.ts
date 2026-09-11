@@ -16,6 +16,10 @@ export const classStatusLabels = {
   completed: "Terminada",
   cancelled: "Cancelada",
 } as const;
+
+export function classStatusTone(status: keyof typeof classStatusLabels) {
+  return status === "completed" ? "success" : status === "cancelled" ? "danger" : "warning";
+}
 export const paymentMethodLabels = {
   cash: "Efectivo",
   bizum: "Bizum",

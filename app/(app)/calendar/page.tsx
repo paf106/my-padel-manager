@@ -1,17 +1,15 @@
 import Link from "next/link";
-import { and, asc, gte, lt } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lt } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { classes } from "@/lib/db/schema";
-import { classTypeLabels, classStatusLabels } from "@/lib/labels";
+import { classStudents, classes, students } from "@/lib/db/schema";
+import { classStatusLabels, classStatusTone, classTypeLabels } from "@/lib/labels";
+import { shortStudentName } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { MonthNavigation } from "@/components/calendar/month-navigation";
+import { CalendarDayCell } from "@/components/calendar/calendar-day-cell";
 import { WeekStrip } from "@/components/calendar/week-strip";
-import {
-  buildCalendarHref,
-  getCalendarDays,
-  getStripDays,
-  parseCalendarMonth,
-} from "@/lib/calendar";
+import { getCalendarDays, getStripDays, parseCalendarMonth } from "@/lib/calendar";
 import { madridDateKey, madridMonthRange, madridTime, madridToday } from "@/lib/dates";
 import { capitalizeFirst } from "@/lib/text";
 
@@ -49,31 +47,36 @@ export default async function CalendarPage({
     byDay.set(key, [...(byDay.get(key) ?? []), item]);
   }
   const selectedClasses = byDay.get(selectedDay) ?? [];
+  const rosterRows = selectedClasses.length
+    ? await db
+        .select({
+          classId: classStudents.classId,
+          firstName: students.firstName,
+          lastName: students.lastName,
+        })
+        .from(classStudents)
+        .innerJoin(students, eq(classStudents.studentId, students.id))
+        .where(
+          inArray(
+            classStudents.classId,
+            selectedClasses.map((item) => item.id),
+          ),
+        )
+        .orderBy(asc(students.firstName))
+    : [];
+  const studentsByClass = new Map<string, string[]>();
+  for (const student of rosterRows) {
+    studentsByClass.set(student.classId, [
+      ...(studentsByClass.get(student.classId) ?? []),
+      shortStudentName(student.firstName, student.lastName),
+    ]);
+  }
   const classDays = new Set(rows.map((item) => madridDateKey(item.startsAt)));
 
   return (
     <main className="mx-auto max-w-5xl">
       <div className="hidden lg:block">
-        <PageHeader
-          title={capitalizeFirst(monthDays.monthName)}
-          eyebrow="Agenda"
-          action={
-            <div className="flex gap-2">
-              <Link
-                href="/classes/series/new"
-                className="rounded-xl border border-primary px-3 py-3 text-sm font-bold text-primary"
-              >
-                Serie
-              </Link>
-              <Link
-                href={`/classes/new?date=${selectedDay}`}
-                className="rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white"
-              >
-                Añadir clase
-              </Link>
-            </div>
-          }
-        />
+        <PageHeader title={capitalizeFirst(monthDays.monthName)} eyebrow="Agenda" />
         <div className="mt-6 flex justify-end">
           <MonthNavigation year={year} month={month} />
         </div>
@@ -86,32 +89,19 @@ export default async function CalendarPage({
             ))}
             {monthDays.cells.map((cell, index) =>
               cell ? (
-                <div
+                <CalendarDayCell
                   key={cell.date}
-                  className={`min-h-28 rounded-xl border p-2 ${cell.isToday ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
-                >
-                  <Link
-                    href={buildCalendarHref("/calendar", year, month, cell.date)}
-                    className="inline-flex min-h-11 min-w-11 items-center justify-center"
-                  >
-                    <span
-                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${cell.isToday ? "bg-primary text-white" : "text-slate-800"}`}
-                    >
-                      {cell.dayNumber}
-                    </span>
-                  </Link>
-                  <div className="mt-1 space-y-1">
-                    {(byDay.get(cell.date) ?? []).slice(0, 3).map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/classes/${item.id}`}
-                        className={`block truncate rounded-md px-1.5 py-1 text-[11px] font-bold ${item.status === "completed" ? "bg-primary-soft text-primary-hover" : item.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800"}`}
-                      >
-                        {madridTime(item.startsAt)} · {classTypeLabels[item.type]}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                  date={cell.date}
+                  dayNumber={cell.dayNumber}
+                  isToday={cell.isToday}
+                  classes={(byDay.get(cell.date) ?? []).map((item) => ({
+                    id: item.id,
+                    time: madridTime(item.startsAt),
+                    type: classTypeLabels[item.type],
+                    statusTone: classStatusTone(item.status),
+                    statusLabel: classStatusLabels[item.status],
+                  }))}
+                />
               ) : (
                 <div
                   key={`empty-${index}`}
@@ -148,11 +138,17 @@ export default async function CalendarPage({
                 >
                   <div className="flex items-center justify-between">
                     <p className="font-black">{madridTime(item.startsAt)}</p>
-                    <span className="text-xs font-bold text-muted">
+                    <Badge tone={classStatusTone(item.status)}>
                       {classStatusLabels[item.status]}
-                    </span>
+                    </Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted">{classTypeLabels[item.type]}</p>
+                  <p
+                    className="mt-2 truncate text-sm font-bold text-slate-700"
+                    title={studentsByClass.get(item.id)?.join(", ") || "Sin alumnos"}
+                  >
+                    {studentsByClass.get(item.id)?.join(", ") || "Sin alumnos"}
+                  </p>
                 </Link>
               ))}
             </div>
