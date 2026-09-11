@@ -6,9 +6,16 @@ type Database = ReturnType<typeof drizzle<typeof schema>>;
 type GlobalDatabase = typeof globalThis & { __padelSqlClient?: ReturnType<typeof postgres>; __padelDb?: Database };
 
 const globalForDb = globalThis as GlobalDatabase;
+let moduleDatabase: Database | undefined;
 
 function getDatabase() {
-  if (globalForDb.__padelDb) return globalForDb.__padelDb;
+  if (moduleDatabase) return moduleDatabase;
+
+  const cachedDatabase = process.env.NODE_ENV !== "production" ? globalForDb.__padelDb : undefined;
+  if (cachedDatabase) {
+    moduleDatabase = cachedDatabase;
+    return cachedDatabase;
+  }
 
   const rawConnectionString = process.env.DATABASE_URL?.trim();
   const connectionString = rawConnectionString?.replace(/^(["'])(.*)\1$/, "$2").trim();
@@ -22,8 +29,11 @@ function getDatabase() {
   }
   if (!parsed.protocol.startsWith("postgres")) throw new Error("DATABASE_URL must use the postgres:// or postgresql:// protocol.");
 
-  const sqlClient = globalForDb.__padelSqlClient ?? postgres(connectionString, { prepare: false, max: 4, idle_timeout: 20, connect_timeout: 10 });
-  const database = globalForDb.__padelDb ?? drizzle(sqlClient, { schema });
+  const sqlClient = process.env.NODE_ENV !== "production"
+    ? globalForDb.__padelSqlClient ?? postgres(connectionString, { prepare: false, max: 1, idle_timeout: 20, connect_timeout: 10 })
+    : postgres(connectionString, { prepare: false, max: 1, idle_timeout: 20, connect_timeout: 10 });
+  const database = drizzle(sqlClient, { schema });
+  moduleDatabase = database;
   if (process.env.NODE_ENV !== "production") {
     globalForDb.__padelSqlClient = sqlClient;
     globalForDb.__padelDb = database;
