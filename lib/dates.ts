@@ -1,5 +1,6 @@
 import { addMonths, endOfMonth, format, startOfMonth, subMonths } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { es } from "date-fns/locale";
 
 export const MADRID_TIME_ZONE = "Europe/Madrid";
 
@@ -9,6 +10,31 @@ export function madridDateKey(date: Date) {
 
 export function madridTime(date: Date) {
   return format(toZonedTime(date, MADRID_TIME_ZONE), "HH:mm");
+}
+
+export function madridDate(date: Date) {
+  return madridFormat(date, "dd-MM-yyyy");
+}
+
+export function madridDateTime(date: Date) {
+  return madridFormat(date, "dd-MM-yyyy HH:mm");
+}
+
+export function madridDayMonth(date: Date) {
+  return madridFormat(date, "dd-MM");
+}
+
+export function madridFormat(date: Date, pattern: string) {
+  return format(toZonedTime(date, MADRID_TIME_ZONE), pattern, { locale: es });
+}
+
+export function formatDateKey(value: string) {
+  const [year, month, day] = value.split("-");
+  return `${day}-${month}-${year}`;
+}
+
+export function madridMonthLabel(month: string) {
+  return madridFormat(new Date(`${month}-01T12:00:00Z`), "MMMM yyyy");
 }
 
 export function madridFromLocalInput(value: string) {

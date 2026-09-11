@@ -1,16 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
   madridDateKey,
+  madridDate,
+  madridDateTime,
+  madridDayMonth,
   madridFromLocalInput,
+  formatDateKey,
   madridLocalInputValue,
   madridMonthKeys,
   madridMonthRange,
   madridMonthWindow,
+  madridMonthLabel,
   madridTime,
   madridUpcomingRange,
 } from "./dates";
 
 describe("Madrid date boundaries", () => {
+  it("formats visible dates and times in Madrid time", () => {
+    const instant = new Date("2026-09-10T16:00:00Z");
+    expect(madridDate(instant)).toBe("10-09-2026");
+    expect(madridDateTime(instant)).toBe("10-09-2026 18:00");
+    expect(madridDayMonth(instant)).toBe("10-09");
+    expect(formatDateKey("1990-05-12")).toBe("12-05-1990");
+    expect(madridMonthLabel("2026-09")).toBe("septiembre 2026");
+  });
+
   it("keeps a midnight Madrid class on the correct local day", () => {
     const instant = new Date("2026-09-01T00:30:00+02:00");
     expect(madridDateKey(instant)).toBe("2026-09-01");
