@@ -65,11 +65,7 @@ export default async function StudentDetailPage({
           Editar
         </Link>
       </div>
-      <PageHeader
-        title={`${student.firstName} ${student.lastName}`}
-        subtitle={student.phone || "Sin teléfono"}
-        className="mt-6"
-      />
+      <PageHeader title={`${student.firstName} ${student.lastName}`} className="mt-6" />
       <dl className="mt-8 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white px-5">
         <Info label="Nivel" value={levelLabels[student.level]} />
         <Info label="Sexo" value={genderLabels[student.gender]} />
