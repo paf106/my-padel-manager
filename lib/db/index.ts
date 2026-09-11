@@ -30,8 +30,8 @@ function getDatabase() {
   if (!parsed.protocol.startsWith("postgres")) throw new Error("DATABASE_URL must use the postgres:// or postgresql:// protocol.");
 
   const sqlClient = process.env.NODE_ENV !== "production"
-    ? globalForDb.__padelSqlClient ?? postgres(connectionString, { prepare: false, max: 1, idle_timeout: 20, connect_timeout: 10 })
-    : postgres(connectionString, { prepare: false, max: 1, idle_timeout: 20, connect_timeout: 10 });
+    ? globalForDb.__padelSqlClient ?? postgres(connectionString, { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 10 })
+    : postgres(connectionString, { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 10 });
   const database = drizzle(sqlClient, { schema });
   moduleDatabase = database;
   if (process.env.NODE_ENV !== "production") {

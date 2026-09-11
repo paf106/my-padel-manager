@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { MonthNavigation } from "@/components/calendar/month-navigation";
 import { WeekStrip } from "@/components/calendar/week-strip";
 import { buildCalendarHref, getCalendarDays, getStripDays, parseCalendarMonth } from "@/lib/calendar";
-import { madridDateKey, madridMonthRange, madridMonthWindow, madridTime, madridToday } from "@/lib/dates";
+import { madridDateKey, madridMonthRange, madridTime, madridToday } from "@/lib/dates";
 import { capitalizeFirst } from "@/lib/text";
 
 export const dynamic = "force-dynamic";
@@ -20,18 +20,14 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const stripDays = getStripDays(year, month);
   const rangeStart = madridMonthRange(new Date(`${stripDays[0].date}T12:00:00Z`)).start;
   const rangeEnd = madridMonthRange(new Date(`${stripDays.at(-1)!.date}T12:00:00Z`)).end;
-  const markerRange = madridMonthWindow(new Date(`${year}-${String(month).padStart(2, "0")}-15T12:00:00Z`));
-  const [rows, markerRows] = await Promise.all([
-    db.select().from(classes).where(and(gte(classes.startsAt, rangeStart), lt(classes.startsAt, rangeEnd))).orderBy(asc(classes.startsAt)),
-    db.select({ startsAt: classes.startsAt }).from(classes).where(and(gte(classes.startsAt, markerRange.start), lt(classes.startsAt, markerRange.end))),
-  ]);
+  const rows = await db.select({ id: classes.id, type: classes.type, status: classes.status, startsAt: classes.startsAt }).from(classes).where(and(gte(classes.startsAt, rangeStart), lt(classes.startsAt, rangeEnd))).orderBy(asc(classes.startsAt));
   const byDay = new Map<string, typeof rows>();
   for (const item of rows) {
     const key = madridDateKey(item.startsAt);
     byDay.set(key, [...(byDay.get(key) ?? []), item]);
   }
   const selectedClasses = byDay.get(selectedDay) ?? [];
-  const classDays = new Set(markerRows.map((item) => madridDateKey(item.startsAt)));
+  const classDays = new Set(rows.map((item) => madridDateKey(item.startsAt)));
 
   return (
     <main className="mx-auto max-w-5xl">

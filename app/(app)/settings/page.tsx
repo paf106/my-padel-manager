@@ -1,18 +1,13 @@
-import { eq } from "drizzle-orm";
 import { version } from "@/package.json";
-import { db } from "@/lib/db";
-import { appSettings } from "@/lib/db/schema";
+import { getCachedAppSettings } from "@/lib/cached-data";
 import { updateSettings } from "./actions";
 import { PageHeader } from "@/components/ui/page-header";
 import { Field, Input } from "@/components/ui/field";
 import { MoneyInput } from "@/components/ui/money-input";
 import { LogoutButton } from "@/components/auth/logout-button";
 
-export const dynamic = "force-dynamic";
-
 export default async function SettingsPage() {
-  const [settings] = await db.select().from(appSettings).where(eq(appSettings.id, 1));
-  const current = settings ?? { defaultCourtPriceCents: 2000, rateIndividualCents: 1800, ratePairCents: 1200, rateGroupCents: 1000, defaultDurationMin: 60 };
+  const current = await getCachedAppSettings();
   return (
     <main className="mx-auto max-w-3xl">
       <PageHeader title="Ajustes" eyebrow="Configuración" />
