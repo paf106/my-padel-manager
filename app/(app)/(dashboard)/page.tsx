@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { and, asc, gte, lt, sql, sum } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lt, sql, sum } from "drizzle-orm";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarDays, ChevronRight, Settings } from "lucide-react";
+import { CalendarDays, Settings } from "lucide-react";
 import { db } from "@/lib/db";
-import { classes, payments } from "@/lib/db/schema";
+import { classStudents, classes, payments, students } from "@/lib/db/schema";
 import { RevenueChart } from "@/components/revenue-chart";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, shortStudentName } from "@/lib/format";
+import { classTypeLabels } from "@/lib/labels";
 import {
+  madridFormat,
+  madridDayMonth,
   madridMonthKey,
   madridMonthKeys,
   madridNextMonthStartKey,
@@ -48,6 +51,30 @@ export default async function DashboardPage() {
       .where(gte(payments.period, madridRecentMonthStartKey(now)))
       .groupBy(payments.period),
   ]);
+  const rosterRows = upcoming.length
+    ? await db
+        .select({
+          classId: classStudents.classId,
+          firstName: students.firstName,
+          lastName: students.lastName,
+        })
+        .from(classStudents)
+        .innerJoin(students, eq(classStudents.studentId, students.id))
+        .where(
+          inArray(
+            classStudents.classId,
+            upcoming.map((item) => item.id),
+          ),
+        )
+        .orderBy(asc(students.firstName))
+    : [];
+  const studentsByClass = new Map<string, string[]>();
+  for (const student of rosterRows) {
+    studentsByClass.set(student.classId, [
+      ...(studentsByClass.get(student.classId) ?? []),
+      shortStudentName(student.firstName, student.lastName),
+    ]);
+  }
   const paidByMonth = new Map(
     recentPayments.map((payment) => [payment.period.slice(0, 7), Number(payment.paid ?? 0)]),
   );
@@ -98,15 +125,7 @@ export default async function DashboardPage() {
         </section>
       </div>
       <section className="mt-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-black">Próximas clases</h2>
-          <Link
-            href="/calendar"
-            className="flex items-center gap-1 text-sm font-bold text-emerald-700"
-          >
-            Ver todas <ChevronRight size={16} />
-          </Link>
-        </div>
+        <h2 className="mb-3 text-lg font-black">Próximas clases</h2>
         {upcoming.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
             <CalendarDays className="mx-auto mb-3 text-slate-400" />
@@ -121,14 +140,14 @@ export default async function DashboardPage() {
                 className="rounded-2xl border border-slate-200 bg-white p-4"
               >
                 <p className="font-black">
-                  {format(item.startsAt, "EEE d · HH:mm", { locale: es })}
+                  {madridDayMonth(item.startsAt)} · {madridFormat(item.startsAt, "HH:mm")}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {item.type === "individual"
-                    ? "Individual"
-                    : item.type === "pair"
-                      ? "Pareja"
-                      : "Grupo"}
+                <p className="mt-1 text-sm text-slate-500">{classTypeLabels[item.type]}</p>
+                <p
+                  className="mt-2 truncate text-sm font-bold text-slate-700"
+                  title={studentsByClass.get(item.id)?.join(", ") || "Sin alumnos"}
+                >
+                  {studentsByClass.get(item.id)?.join(", ") || "Sin alumnos"}
                 </p>
               </Link>
             ))}
