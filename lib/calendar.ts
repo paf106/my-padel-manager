@@ -53,10 +53,11 @@ export function getStripDays(year: number, month: number) {
   let current = getWeekStartKey(firstKey);
   const last = addDays(lastKey, 6 - (new Date(`${lastKey}T00:00:00.000Z`).getUTCDay() === 0 ? 6 : new Date(`${lastKey}T00:00:00.000Z`).getUTCDay() - 1));
   const days: StripDay[] = [];
+  const today = madridToday();
   while (current <= last) {
     const date = new Date(`${current}T00:00:00.000Z`);
     const dateKey = current;
-    days.push({ date: dateKey, dayNumber: date.getUTCDate(), isToday: dateKey === madridToday(), weekdayLabel: format(date, "EEE", { locale: es }), weekStart: getWeekStartKey(dateKey) });
+    days.push({ date: dateKey, dayNumber: date.getUTCDate(), isToday: dateKey === today, weekdayLabel: format(date, "EEE", { locale: es }), weekStart: getWeekStartKey(dateKey) });
     current = addDays(current, 1);
   }
   return days;

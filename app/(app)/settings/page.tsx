@@ -1,4 +1,3 @@
-import { version } from "@/package.json";
 import { getCachedAppSettings } from "@/lib/cached-data";
 import { updateSettings } from "./actions";
 import { PageHeader } from "@/components/ui/page-header";
@@ -20,7 +19,7 @@ export default async function SettingsPage() {
         <Field label="Duración por defecto (minutos)"><Input name="defaultDurationMin" type="number" min="1" step="1" defaultValue={current.defaultDurationMin} /></Field>
         <button className="min-h-12 w-full rounded-xl bg-emerald-800 font-bold text-white lg:col-span-2 lg:w-fit lg:px-6">Guardar ajustes</button>
       </form>
-      <p className="mt-8 text-center text-xs text-slate-400">Versión {version}</p>
+      <p className="mt-8 text-center text-xs text-slate-400">Versión 1.0.2</p>
       <div className="mt-8 flex justify-center"><LogoutButton /></div>
     </main>
   );

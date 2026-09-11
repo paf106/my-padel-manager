@@ -7,6 +7,8 @@ import { MonthPicker } from "./month-picker";
 
 export function WeekStrip({ days, selectedDay, year, month, classDays, today }: { days: StripDay[]; selectedDay: string; year: number; month: number; classDays: Set<string>; today: string }) {
   const weeks = Array.from(new Set(days.map((day) => day.weekStart)));
+  const daysByWeek = new Map<string, StripDay[]>();
+  for (const day of days) daysByWeek.set(day.weekStart, [...(daysByWeek.get(day.weekStart) ?? []), day]);
   const weekIndex = weeks.indexOf(getWeekStartKey(selectedDay));
 
   return (
@@ -17,7 +19,7 @@ export function WeekStrip({ days, selectedDay, year, month, classDays, today }: 
       <StripScroller weekIndex={weekIndex}>
         {weeks.map((weekStart) => (
           <div key={weekStart} className="grid min-w-full snap-center grid-cols-7 gap-1">
-            {days.filter((day) => day.weekStart === weekStart).map((day) => (
+            {daysByWeek.get(weekStart)?.map((day) => (
               <Link key={day.date} href={buildCalendarHref("/calendar", year, month, day.date)} className="flex min-h-20 flex-col items-center justify-center gap-1">
                 <span className={`text-sm capitalize ${day.date === selectedDay ? "text-emerald-700" : "text-slate-700"}`}>{day.weekdayLabel}</span>
                 <span className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold ${day.date === selectedDay ? "bg-emerald-800 text-white" : day.isToday ? "ring-2 ring-emerald-800" : ""}`}>{day.dayNumber}</span>
