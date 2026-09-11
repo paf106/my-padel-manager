@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { NavLink } from "@/components/ui/nav-link";
-import { requireUser } from "@/lib/auth";
 
 const items = [
   ["/", "Inicio", "home"],
@@ -11,7 +12,8 @@ const items = [
 ] as const;
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await requireUser();
+  const userId = (await headers()).get("x-padel-auth-user");
+  if (!userId) redirect("/login");
   return (
     <div className="min-h-screen lg:pl-64">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-8 lg:flex">
