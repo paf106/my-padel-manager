@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { asc, ilike, or } from "drizzle-orm";
-import { UserPlus } from "lucide-react";
 import { db } from "@/lib/db";
 import { students } from "@/lib/db/schema";
-import { Fab } from "@/components/ui/fab";
 import { PageHeader } from "@/components/ui/page-header";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import { StudentSearch } from "@/components/students/student-search";
 import { levelLabels } from "@/lib/labels";
+import { NewStudentDialog } from "@/components/students/new-student-dialog";
+import { formatDateKey } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -32,22 +32,10 @@ export default async function StudentsPage({
     .orderBy(asc(students.lastName));
   return (
     <main className="mx-auto min-h-screen max-w-5xl">
-      <PageHeader
-        title="Alumnos"
-        eyebrow="Personas"
-        action={
-          <Link
-            href="/students/new"
-            className="hidden rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white lg:inline-flex"
-          >
-            Nuevo alumno
-          </Link>
-        }
-      />
+      <PageHeader title="Alumnos" eyebrow="Personas" action={<NewStudentDialog />} />
       <div className="mt-6">
         <StudentSearch initialQuery={q} />
       </div>
-      <Fab href="/students/new" label="Nuevo alumno" icon={UserPlus} />
       {studentRows.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
           No se han encontrado alumnos.
@@ -73,7 +61,7 @@ export default async function StudentsPage({
                     <p className="mt-1 text-sm text-slate-500">{student.phone || "Sin teléfono"}</p>
                     <p className="mt-1 text-xs text-slate-400">
                       {student.birthDate
-                        ? `Nacido el ${student.birthDate}`
+                        ? `Nacido el ${formatDateKey(student.birthDate)}`
                         : "Fecha de nacimiento no indicada"}
                     </p>
                   </div>

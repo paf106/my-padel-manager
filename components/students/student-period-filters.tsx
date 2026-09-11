@@ -2,7 +2,22 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
-import { Select } from "@/components/ui/field";
+import { SelectPill } from "@/components/ui/select-pill";
+
+const months = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
 
 export function StudentPeriodFilters({
   year,
@@ -29,42 +44,33 @@ export function StudentPeriodFilters({
     });
   }
   return (
-    <div className={`flex flex-wrap gap-3 ${isPending ? "opacity-70" : ""}`} aria-busy={isPending}>
-      <label className="text-xs font-bold text-slate-500">
-        Mes
-        <Select
-          name="month"
-          value={String(optimisticPeriod.month)}
-          onChange={(event) => update("month", event.target.value)}
-        >
-          <option value="1">Enero</option>
-          <option value="2">Febrero</option>
-          <option value="3">Marzo</option>
-          <option value="4">Abril</option>
-          <option value="5">Mayo</option>
-          <option value="6">Junio</option>
-          <option value="7">Julio</option>
-          <option value="8">Agosto</option>
-          <option value="9">Septiembre</option>
-          <option value="10">Octubre</option>
-          <option value="11">Noviembre</option>
-          <option value="12">Diciembre</option>
-        </Select>
-      </label>
-      <label className="text-xs font-bold text-slate-500">
-        Año
-        <Select
-          name="year"
-          value={String(optimisticPeriod.year)}
-          onChange={(event) => update("year", event.target.value)}
-        >
-          {years.map((value) => (
+    <div className={`flex flex-wrap gap-2 ${isPending ? "opacity-70" : ""}`} aria-busy={isPending}>
+      <SelectPill
+        label="Mes"
+        value={String(optimisticPeriod.month)}
+        onChange={(event) => update("month", event.target.value)}
+        className="min-w-[11rem]"
+      >
+        {months.map((name, index) => (
+          <option key={index + 1} value={index + 1}>
+            {name}
+          </option>
+        ))}
+      </SelectPill>
+      <SelectPill
+        label="Año"
+        value={String(optimisticPeriod.year)}
+        onChange={(event) => update("year", event.target.value)}
+        className="min-w-[8.5rem]"
+      >
+        {Array.from(new Set([...years, optimisticPeriod.year]))
+          .sort((a, b) => b - a)
+          .map((value) => (
             <option key={value} value={value}>
               {value}
             </option>
           ))}
-        </Select>
-      </label>
+      </SelectPill>
     </div>
   );
 }

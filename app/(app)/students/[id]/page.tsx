@@ -5,10 +5,20 @@ import { classStudents, classes, students } from "@/lib/db/schema";
 import { levelLabels, genderLabels, classStatusLabels, classTypeLabels } from "@/lib/labels";
 import { formatMoney } from "@/lib/format";
 import { parseCalendarMonth } from "@/lib/calendar";
-import { madridDateKey, madridMonthRange, madridTime } from "@/lib/dates";
+import {
+  formatDateKey,
+  madridDate,
+  madridDateKey,
+  madridMonthRange,
+  madridTime,
+} from "@/lib/dates";
 import { BackLink } from "@/components/ui/back-link";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPeriodFilters } from "@/components/students/student-period-filters";
+import { Alert } from "@/components/ui/alert";
+import { ConfirmButton } from "@/components/ui/confirm-button";
+import { Edit, Trash2 } from "lucide-react";
+import { deleteStudent } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +27,7 @@ export default async function StudentDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ year?: string; month?: string }>;
+  searchParams: Promise<{ year?: string; month?: string; error?: string }>;
 }) {
   const [{ id }, filter] = await Promise.all([params, searchParams]);
   const { year, month } = parseCalendarMonth(filter.year, filter.month);
@@ -56,21 +66,53 @@ export default async function StudentDetailPage({
   ).sort((a, b) => b - a);
   return (
     <main className="mx-auto max-w-5xl">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <BackLink href="/students" label="Volver a alumnos" />
-        <Link
-          href={`/students/${id}/edit`}
-          className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white"
-        >
-          Editar
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/students/${id}/edit`}
+            aria-label="Editar alumno"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-3 py-3 text-sm font-bold text-white"
+          >
+            <Edit size={18} />
+            <span className="sr-only lg:not-sr-only">Editar</span>
+          </Link>
+          <ConfirmButton
+            label={
+              <>
+                <Trash2 size={18} />
+                <span className="sr-only lg:not-sr-only">Eliminar</span>
+              </>
+            }
+            ariaLabel="Eliminar alumno"
+            confirmLabel={
+              yearRows.length > 0
+                ? `No se puede eliminar: el alumno participa en ${yearRows.length} clase${yearRows.length === 1 ? "" : "s"}. Quítalo primero de esas clases.`
+                : "El alumno y sus pagos se eliminarán definitivamente."
+            }
+          >
+            {yearRows.length === 0 ? (
+              <form action={deleteStudent.bind(null, id)}>
+                <button className="min-h-11 rounded-xl bg-red-700 px-4 py-3 text-sm font-bold text-white">
+                  Eliminar
+                </button>
+              </form>
+            ) : null}
+          </ConfirmButton>
+        </div>
       </div>
+      {filter.error === "has-classes" && (
+        <Alert>El alumno no se puede eliminar mientras tenga clases asignadas.</Alert>
+      )}
       <PageHeader title={`${student.firstName} ${student.lastName}`} className="mt-6" />
       <dl className="mt-8 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white px-5">
         <Info label="Nivel" value={levelLabels[student.level]} />
         <Info label="Sexo" value={genderLabels[student.gender]} />
         <Info label="Teléfono" value={student.phone || "-"} />
-        <Info label="Fecha de nacimiento" value={student.birthDate || "-"} />
+        <Info
+          label="Fecha de nacimiento"
+          value={student.birthDate ? formatDateKey(student.birthDate) : "-"}
+        />
         <Info label="Estado" value={student.active ? "Activo" : "Inactivo"} />
       </dl>
       <section className="mt-8">
@@ -92,7 +134,7 @@ export default async function StudentDetailPage({
               >
                 <div>
                   <p className="font-black">
-                    {madridDateKey(lesson.startsAt)} · {classTypeLabels[lesson.type]}
+                    {madridDate(lesson.startsAt)} · {classTypeLabels[lesson.type]}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
                     {classStatusLabels[lesson.status]} · {madridTime(lesson.startsAt)}
