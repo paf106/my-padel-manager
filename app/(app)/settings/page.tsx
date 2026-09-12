@@ -1,3 +1,4 @@
+import { version } from "@/package.json";
 import { getCachedAppSettings } from "@/lib/cached-data";
 import { updateSettings } from "./actions";
 import { PageHeader } from "@/components/ui/page-header";
@@ -54,7 +55,7 @@ export default async function SettingsPage() {
           Guardar ajustes
         </button>
       </form>
-      <p className="mt-8 text-center text-xs text-slate-400">Versión 1.0.2</p>
+      <p className="mt-8 text-center text-xs text-slate-400">Versión {version}</p>
       <div className="mt-8 flex justify-center">
         <LogoutButton />
       </div>
